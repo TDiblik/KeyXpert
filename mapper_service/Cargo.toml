@@ -1,0 +1,23 @@
+[package]
+name = "mapper_service"
+version = "0.1.0"
+authors = ["Tomáš Diblík <dibla.tomas@post.cz>"]
+edition = "2021"
+description = "TODO"
+license-file = "../LICENSE"
+
+[profile.release]
+opt-level = 3
+
+[dependencies]
+anyhow = "1.0.69"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.windows-sys]
+version = "0.42.0"
+features = [
+    "Win32_Foundation",
+    "Win32_System_LibraryLoader",
+    "Win32_UI_WindowsAndMessaging",
+]
