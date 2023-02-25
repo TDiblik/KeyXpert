@@ -103,13 +103,13 @@ const SYS_KEYS: [c_int; 63] = [
     VK_OEM_CLEAR,
 ];
 
-static mut LAST_KEY_SENT: u8 = 0;
-
 fn main() -> Result<()> {
     // Setup remappings
     unsafe {
         // + => é
         REMAPPED_KEYS[49] = Some(48);
+        // é => +
+        REMAPPED_KEYS[48] = Some(49);
 
         // š => alt
         REMAPPED_KEYS[51] = Some(164);
@@ -158,6 +158,13 @@ macro_rules! event_handled {
     };
 }
 
+macro_rules! log_debug {
+    ($($arg:tt)*) => {
+        #[cfg(debug_assertions)]
+        println!($($arg)*)
+    };
+}
+
 unsafe extern "system" fn remap_keys_callback(
     n_code: i32,
     mut w_param: WPARAM,
@@ -170,9 +177,7 @@ unsafe extern "system" fn remap_keys_callback(
     let kbd_struct = &*(l_param as *const KBDLLHOOKSTRUCT);
 
     let trigger_key = kbd_struct.vkCode as usize;
-
-    let possibly_remapped_key_in_range: Option<&Option<u8>> =
-        REMAPPED_KEYS.get::<usize>(trigger_key);
+    let possibly_remapped_key_in_range: Option<&Option<u8>> = REMAPPED_KEYS.get(trigger_key);
     if possibly_remapped_key_in_range.is_none() {
         call_next_hook!(n_code, w_param, l_param);
     }
@@ -182,29 +187,9 @@ unsafe extern "system" fn remap_keys_callback(
         call_next_hook!(n_code, w_param, l_param);
     }
 
-    let remmaped_key: u8 = possibly_remapped_key.unwrap();
-
     let w_param_u32 = w_param as u32;
+    let remmaped_key: u8 = possibly_remapped_key.unwrap();
     let scan_code = MapVirtualKeyW(remmaped_key as u32, MAPVK_VK_TO_VSC) as u8;
-
-    // println!("trigger {}, last_key {}", trigger_key, LAST_KEY_SENT);
-    // if trigger_key as u8 == LAST_KEY_SENT
-    //     && (w_param_u32 == WM_KEYDOWN || w_param_u32 == WM_SYSKEYDOWN)
-    // {
-    //     keybd_event(
-    //         trigger_key.try_into().unwrap(),
-    //         MapVirtualKeyW(trigger_key as u32, MAPVK_VK_TO_VSC) as u8,
-    //         KEYEVENTF_EXTENDEDKEY,
-    //         0,
-    //     );
-    //     event_handled!();
-    // }
-
-    // Handle character remapping
-    // WM_SYSKEYDOWN event is sent only once, after that, WM_KEYDOWN event is sent a lot of times.
-    // We don't want to run rebinding for the duration of user holding the sys key
-    // As for WM_KEYUP, this one fires only once, so we can share it.
-
     if w_param_u32 == WM_SYSKEYDOWN
         || (w_param_u32 == WM_KEYDOWN
             && !is_sys_key(trigger_key as u8)
@@ -213,14 +198,16 @@ unsafe extern "system" fn remap_keys_callback(
             && is_sys_key(remmaped_key)
             && GetAsyncKeyState(remmaped_key as i32) == 0)
     {
-        #[cfg(debug_assertions)]
-        println!("key down event fired");
+        log_debug!("keydown event fired");
 
-        LAST_KEY_SENT = remmaped_key;
         keybd_event(remmaped_key, scan_code, KEYEVENTF_EXTENDEDKEY, 0);
-    } else if w_param_u32 == WM_KEYUP {
-        #[cfg(debug_assertions)]
-        println!("key up event fired");
+
+        event_handled!();
+    }
+
+    // WM_KEYUP, fires only once, so we can share it.
+    if w_param_u32 == WM_KEYUP {
+        log_debug!("keyup event fired");
 
         keybd_event(
             remmaped_key,
@@ -228,11 +215,12 @@ unsafe extern "system" fn remap_keys_callback(
             KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
             0,
         );
+
         event_handled!();
-    } else {
-        // Neccessary for syskey to stay down
-        w_param = WM_SYSKEYDOWN as usize;
     }
+
+    // Neccessary for syskey to stay down
+    w_param = WM_SYSKEYDOWN as usize;
 
     event_handled!();
 }
