@@ -25,7 +25,7 @@ use winapi::{
             VK_OEM_FJ_MASSHOU, VK_OEM_FJ_ROYA, VK_OEM_FJ_TOUROKU, VK_OEM_MINUS, VK_OEM_PERIOD,
             VK_OEM_PLUS, VK_PA1, VK_PACKET, VK_PLAY, VK_PROCESSKEY, VK_RCONTROL, VK_RMENU,
             VK_RSHIFT, VK_RWIN, VK_SCROLL, VK_SLEEP, VK_VOLUME_DOWN, VK_VOLUME_MUTE, VK_VOLUME_UP,
-            VK_ZOOM, WH_KEYBOARD_LL, WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN,
+            VK_ZOOM, WH_KEYBOARD_LL, WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP,
         },
     },
 };
@@ -34,9 +34,9 @@ use winapi::{
 // Basically, we have at max 255 keys. What we do with REMAPPED_KEYS and SYS_KEYS_TABLE is
 // fill the arrays with None/false and then add Some/true to places where keys are supposed to be
 // this allowes us to find REMAPPED_KEYS and SYS_KEYS in constant time (and search on stack instead of heap).
-static mut REMAPPED_KEYS: [Option<u8>; 255] = [None; 255];
+static mut REMAPPED_KEYS: [Option<u8>; 256] = [None; 256];
 static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
-static mut SYS_KEYS_TABLE: [bool; 255] = [false; 255];
+static mut SYS_KEYS_TABLE: [bool; 256] = [false; 256];
 const SYS_KEYS: [c_int; 63] = [
     VK_LSHIFT,
     VK_RSHIFT,
@@ -108,8 +108,8 @@ fn main() -> Result<()> {
     unsafe {
         // + => é
         REMAPPED_KEYS[49] = Some(48);
-        // é => +
-        REMAPPED_KEYS[48] = Some(49);
+        // é => ě
+        REMAPPED_KEYS[48] = Some(50);
 
         // š => alt
         REMAPPED_KEYS[51] = Some(164);
@@ -146,6 +146,13 @@ fn main() -> Result<()> {
     }
 }
 
+macro_rules! log_debug {
+    ($($arg:tt)*) => {
+        #[cfg(debug_assertions)]
+        println!($($arg)*)
+    };
+}
+
 macro_rules! call_next_hook {
     ($n_code:expr, $w_param:expr, $l_param:expr) => {
         return CallNextHookEx(WINDOW_HHOOK, $n_code, $w_param, $l_param);
@@ -158,12 +165,34 @@ macro_rules! event_handled {
     };
 }
 
-macro_rules! log_debug {
-    ($($arg:tt)*) => {
-        #[cfg(debug_assertions)]
-        println!($($arg)*)
+macro_rules! map_virtual_key {
+    ($key:expr) => {
+        MapVirtualKeyW($key as u32, MAPVK_VK_TO_VSC) as u8
     };
 }
+
+macro_rules! keybd_trigger_key_up {
+    ($key:expr, $scan_code:expr) => {
+        keybd_event(
+            $key as u8,
+            $scan_code,
+            KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
+            0,
+        );
+    };
+}
+
+macro_rules! keybd_trigger_key_down {
+    ($key:expr, $scan_code:expr) => {
+        keybd_event($key as u8, $scan_code, KEYEVENTF_EXTENDEDKEY, 0);
+    };
+}
+
+struct LastSentRemapInfo {
+    sender_key: u8,
+    remap_key: u8,
+}
+static mut LAST_SENT_REMAP_INFO: Option<LastSentRemapInfo> = None;
 
 unsafe extern "system" fn remap_keys_callback(
     n_code: i32,
@@ -176,7 +205,9 @@ unsafe extern "system" fn remap_keys_callback(
 
     let kbd_struct = &*(l_param as *const KBDLLHOOKSTRUCT);
 
+    let w_param_u32 = w_param as u32;
     let trigger_key = kbd_struct.vkCode as usize;
+
     let possibly_remapped_key_in_range: Option<&Option<u8>> = REMAPPED_KEYS.get(trigger_key);
     if possibly_remapped_key_in_range.is_none() {
         call_next_hook!(n_code, w_param, l_param);
@@ -187,7 +218,42 @@ unsafe extern "system" fn remap_keys_callback(
         call_next_hook!(n_code, w_param, l_param);
     }
 
-    let w_param_u32 = w_param as u32;
+    // Prevent recursive remaping
+    if let Some(last_sent_remap) = &LAST_SENT_REMAP_INFO {
+        let is_trigger_sys_key = is_sys_key(trigger_key as u8);
+        if last_sent_remap.remap_key == trigger_key as u8
+            && w_param_u32 == WM_SYSKEYDOWN
+            && is_trigger_sys_key
+        {
+            log_debug!("remap recursive mapping event fired");
+
+            w_param = WM_SYSKEYDOWN as usize;
+            keybd_trigger_key_down!(trigger_key, map_virtual_key!(trigger_key));
+
+            event_handled!();
+        }
+
+        if last_sent_remap.sender_key == trigger_key as u8
+            && w_param_u32 == WM_SYSKEYUP
+            && (is_trigger_sys_key || is_sys_key(last_sent_remap.remap_key))
+        {
+            log_debug!("keyup recursive mapping event fired");
+
+            keybd_trigger_key_up!(
+                last_sent_remap.remap_key,
+                map_virtual_key!(last_sent_remap.remap_key)
+            );
+            LAST_SENT_REMAP_INFO = None;
+
+            event_handled!();
+        }
+
+        if last_sent_remap.remap_key == trigger_key as u8 {
+            call_next_hook!(n_code, w_param, l_param);
+        }
+    }
+
+    // Remap chars
     let remmaped_key: u8 = possibly_remapped_key.unwrap();
     let scan_code = MapVirtualKeyW(remmaped_key as u32, MAPVK_VK_TO_VSC) as u8;
     if w_param_u32 == WM_SYSKEYDOWN
@@ -200,7 +266,11 @@ unsafe extern "system" fn remap_keys_callback(
     {
         log_debug!("keydown event fired");
 
-        keybd_event(remmaped_key, scan_code, KEYEVENTF_EXTENDEDKEY, 0);
+        LAST_SENT_REMAP_INFO = Some(LastSentRemapInfo {
+            sender_key: trigger_key as u8,
+            remap_key: remmaped_key,
+        });
+        keybd_trigger_key_down!(remmaped_key, scan_code);
 
         event_handled!();
     }
@@ -209,12 +279,8 @@ unsafe extern "system" fn remap_keys_callback(
     if w_param_u32 == WM_KEYUP {
         log_debug!("keyup event fired");
 
-        keybd_event(
-            remmaped_key,
-            scan_code,
-            KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
-            0,
-        );
+        LAST_SENT_REMAP_INFO = None;
+        keybd_trigger_key_up!(remmaped_key, scan_code);
 
         event_handled!();
     }
