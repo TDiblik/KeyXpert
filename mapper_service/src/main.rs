@@ -170,9 +170,6 @@ unsafe extern "system" fn remap_keys_callback(
     let kbd_struct = &*(l_param as *const KBDLLHOOKSTRUCT);
 
     let trigger_key = kbd_struct.vkCode as usize;
-    // if LAST_KEY_SENT == trigger_key as u8 {
-    //     event_handled!();
-    // }
 
     let possibly_remapped_key_in_range: Option<&Option<u8>> =
         REMAPPED_KEYS.get::<usize>(trigger_key);
@@ -189,6 +186,19 @@ unsafe extern "system" fn remap_keys_callback(
 
     let w_param_u32 = w_param as u32;
     let scan_code = MapVirtualKeyW(remmaped_key as u32, MAPVK_VK_TO_VSC) as u8;
+
+    // println!("trigger {}, last_key {}", trigger_key, LAST_KEY_SENT);
+    // if trigger_key as u8 == LAST_KEY_SENT
+    //     && (w_param_u32 == WM_KEYDOWN || w_param_u32 == WM_SYSKEYDOWN)
+    // {
+    //     keybd_event(
+    //         trigger_key.try_into().unwrap(),
+    //         MapVirtualKeyW(trigger_key as u32, MAPVK_VK_TO_VSC) as u8,
+    //         KEYEVENTF_EXTENDEDKEY,
+    //         0,
+    //     );
+    //     event_handled!();
+    // }
 
     // Handle character remapping
     // WM_SYSKEYDOWN event is sent only once, after that, WM_KEYDOWN event is sent a lot of times.
