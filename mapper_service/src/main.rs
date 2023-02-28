@@ -13,9 +13,9 @@ use winapi::{
         libloaderapi::GetModuleHandleW,
         winuser::{
             keybd_event, CallNextHookEx, DispatchMessageW, GetAsyncKeyState, GetMessageW,
-            MapVirtualKeyW, SetWindowsHookExW, TranslateMessage, HC_ACTION, KBDLLHOOKSTRUCT,
-            KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC, MSG, VK_APPS, VK_ATTN,
-            VK_BROWSER_BACK, VK_BROWSER_FAVORITES, VK_BROWSER_FORWARD, VK_BROWSER_HOME,
+            MapVirtualKeyW, SetWindowsHookExW, TranslateMessage, HC_ACTION, HC_SKIP,
+            KBDLLHOOKSTRUCT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC, MSG, VK_APPS,
+            VK_ATTN, VK_BROWSER_BACK, VK_BROWSER_FAVORITES, VK_BROWSER_FORWARD, VK_BROWSER_HOME,
             VK_BROWSER_REFRESH, VK_BROWSER_SEARCH, VK_BROWSER_STOP, VK_CRSEL, VK_EREOF, VK_EXSEL,
             VK_ICO_00, VK_ICO_CLEAR, VK_ICO_HELP, VK_LAUNCH_APP1, VK_LAUNCH_APP2, VK_LAUNCH_MAIL,
             VK_LAUNCH_MEDIA_SELECT, VK_LCONTROL, VK_LMENU, VK_LSHIFT, VK_LWIN, VK_MEDIA_NEXT_TRACK,
@@ -115,6 +115,8 @@ fn main() -> Result<()> {
         REMAPPED_KEYS[51] = Some(164);
         // a => ctrl
         REMAPPED_KEYS[65] = Some(162);
+        // b => a
+        REMAPPED_KEYS[66] = Some(65);
         // alt => ctrl
         REMAPPED_KEYS[164] = Some(162);
     }
@@ -188,6 +190,7 @@ macro_rules! keybd_trigger_key_down {
     };
 }
 
+#[derive(Debug)]
 struct LastSentRemapInfo {
     sender_key: u8,
     remap_key: u8,
@@ -207,35 +210,19 @@ unsafe extern "system" fn remap_keys_callback(
 
     let w_param_u32 = w_param as u32;
     let trigger_key = kbd_struct.vkCode as usize;
+    let trigger_key_u8 = trigger_key as u8;
 
-    let possibly_remapped_key_in_range: Option<&Option<u8>> = REMAPPED_KEYS.get(trigger_key);
-    if possibly_remapped_key_in_range.is_none() {
-        call_next_hook!(n_code, w_param, l_param);
-    }
-
-    let possibly_remapped_key: &Option<u8> = possibly_remapped_key_in_range.unwrap();
-    if possibly_remapped_key.is_none() {
-        call_next_hook!(n_code, w_param, l_param);
-    }
-
+    // TODO: Ability to remove recursive remapping prevention
     // Prevent recursive remaping
     if let Some(last_sent_remap) = &LAST_SENT_REMAP_INFO {
-        let is_trigger_sys_key = is_sys_key(trigger_key as u8);
-        if last_sent_remap.remap_key == trigger_key as u8
-            && w_param_u32 == WM_SYSKEYDOWN
-            && is_trigger_sys_key
-        {
-            log_debug!("remap recursive mapping event fired");
-
-            w_param = WM_SYSKEYDOWN as usize;
-            keybd_trigger_key_down!(trigger_key, map_virtual_key!(trigger_key));
-
+        // Neccessary for syskey to stay down
+        if last_sent_remap.sender_key == trigger_key_u8 && w_param_u32 == WM_SYSKEYDOWN {
             event_handled!();
         }
 
-        if last_sent_remap.sender_key == trigger_key as u8
-            && w_param_u32 == WM_SYSKEYUP
-            && (is_trigger_sys_key || is_sys_key(last_sent_remap.remap_key))
+        // Send up commands to remapped keys
+        if last_sent_remap.sender_key == trigger_key_u8
+            && (w_param_u32 == WM_SYSKEYUP || w_param_u32 == WM_KEYUP)
         {
             log_debug!("keyup recursive mapping event fired");
 
@@ -248,26 +235,34 @@ unsafe extern "system" fn remap_keys_callback(
             event_handled!();
         }
 
-        if last_sent_remap.remap_key == trigger_key as u8 {
+        if last_sent_remap.remap_key == trigger_key_u8 {
             call_next_hook!(n_code, w_param, l_param);
         }
     }
 
     // Remap chars
+    let possibly_remapped_key_in_range: Option<&Option<u8>> = REMAPPED_KEYS.get(trigger_key);
+    if possibly_remapped_key_in_range.is_none() {
+        call_next_hook!(n_code, w_param, l_param);
+    }
+
+    let possibly_remapped_key: &Option<u8> = possibly_remapped_key_in_range.unwrap();
+    if possibly_remapped_key.is_none() {
+        call_next_hook!(n_code, w_param, l_param);
+    }
+
     let remmaped_key: u8 = possibly_remapped_key.unwrap();
-    let scan_code = MapVirtualKeyW(remmaped_key as u32, MAPVK_VK_TO_VSC) as u8;
+    let scan_code = map_virtual_key!(remmaped_key);
+
+    // hodling SYSKEY || normal buttons down || pressed syskey
     if w_param_u32 == WM_SYSKEYDOWN
-        || (w_param_u32 == WM_KEYDOWN
-            && !is_sys_key(trigger_key as u8)
-            && !is_sys_key(remmaped_key))
-        || (w_param_u32 == WM_KEYDOWN
-            && is_sys_key(remmaped_key)
-            && GetAsyncKeyState(remmaped_key as i32) == 0)
+        || (w_param_u32 == WM_KEYDOWN && !is_sys_key(trigger_key_u8) && !is_sys_key(remmaped_key))
+        || (w_param_u32 == WM_KEYDOWN && is_sys_key(remmaped_key) && LAST_SENT_REMAP_INFO.is_none())
     {
         log_debug!("keydown event fired");
 
         LAST_SENT_REMAP_INFO = Some(LastSentRemapInfo {
-            sender_key: trigger_key as u8,
+            sender_key: trigger_key_u8,
             remap_key: remmaped_key,
         });
         keybd_trigger_key_down!(remmaped_key, scan_code);
@@ -275,7 +270,7 @@ unsafe extern "system" fn remap_keys_callback(
         event_handled!();
     }
 
-    // WM_KEYUP, fires only once, so we can share it.
+    // This will get triggered only when recursive remap is OFF
     if w_param_u32 == WM_KEYUP {
         log_debug!("keyup event fired");
 
