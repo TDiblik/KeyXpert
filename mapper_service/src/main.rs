@@ -2,7 +2,10 @@
 // Rust correctlly shows warnings, however, in this context, those warnings are redundant and annoying.
 #![allow(unused_assignments)]
 
+pub mod utils;
+
 use anyhow::{anyhow, Result};
+use utils::LastSentRemapInfo;
 use winapi::{
     ctypes::c_int,
     shared::{
@@ -12,12 +15,12 @@ use winapi::{
     um::{
         libloaderapi::GetModuleHandleW,
         winuser::{
-            keybd_event, CallNextHookEx, DispatchMessageW, GetAsyncKeyState, GetMessageW,
-            MapVirtualKeyW, SetWindowsHookExW, TranslateMessage, HC_ACTION, HC_SKIP,
-            KBDLLHOOKSTRUCT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC, MSG, VK_APPS,
-            VK_ATTN, VK_BROWSER_BACK, VK_BROWSER_FAVORITES, VK_BROWSER_FORWARD, VK_BROWSER_HOME,
-            VK_BROWSER_REFRESH, VK_BROWSER_SEARCH, VK_BROWSER_STOP, VK_CRSEL, VK_EREOF, VK_EXSEL,
-            VK_ICO_00, VK_ICO_CLEAR, VK_ICO_HELP, VK_LAUNCH_APP1, VK_LAUNCH_APP2, VK_LAUNCH_MAIL,
+            keybd_event, CallNextHookEx, DispatchMessageW, GetMessageW, MapVirtualKeyW,
+            SetWindowsHookExW, TranslateMessage, HC_ACTION, KBDLLHOOKSTRUCT, KEYEVENTF_EXTENDEDKEY,
+            KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC, MSG, VK_APPS, VK_ATTN, VK_BROWSER_BACK,
+            VK_BROWSER_FAVORITES, VK_BROWSER_FORWARD, VK_BROWSER_HOME, VK_BROWSER_REFRESH,
+            VK_BROWSER_SEARCH, VK_BROWSER_STOP, VK_CRSEL, VK_EREOF, VK_EXSEL, VK_ICO_00,
+            VK_ICO_CLEAR, VK_ICO_HELP, VK_LAUNCH_APP1, VK_LAUNCH_APP2, VK_LAUNCH_MAIL,
             VK_LAUNCH_MEDIA_SELECT, VK_LCONTROL, VK_LMENU, VK_LSHIFT, VK_LWIN, VK_MEDIA_NEXT_TRACK,
             VK_MEDIA_PLAY_PAUSE, VK_MEDIA_PREV_TRACK, VK_MEDIA_STOP, VK_NONAME, VK_NUMLOCK,
             VK_OEM_1, VK_OEM_102, VK_OEM_2, VK_OEM_3, VK_OEM_4, VK_OEM_5, VK_OEM_6, VK_OEM_7,
@@ -35,7 +38,6 @@ use winapi::{
 // fill the arrays with None/false and then add Some/true to places where keys are supposed to be
 // this allowes us to find REMAPPED_KEYS and SYS_KEYS in constant time (and search on stack instead of heap).
 static mut REMAPPED_KEYS: [Option<u8>; 256] = [None; 256];
-static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
 static mut SYS_KEYS_TABLE: [bool; 256] = [false; 256];
 const SYS_KEYS: [c_int; 63] = [
     VK_LSHIFT,
@@ -103,7 +105,19 @@ const SYS_KEYS: [c_int; 63] = [
     VK_OEM_CLEAR,
 ];
 
+static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
+static mut ENABLE_RECURSIVE_REMAPPING: bool = false;
+
 fn main() -> Result<()> {
+    // Fill syskey table
+    for &syskey in SYS_KEYS.iter() {
+        unsafe {
+            SYS_KEYS_TABLE[syskey as usize] = true;
+        }
+    }
+
+    // TODO: Read settings
+
     // Setup remappings
     unsafe {
         // + => é
@@ -121,11 +135,9 @@ fn main() -> Result<()> {
         REMAPPED_KEYS[164] = Some(162);
     }
 
-    // Fill syskey table
-    for &syskey in SYS_KEYS.iter() {
-        unsafe {
-            SYS_KEYS_TABLE[syskey as usize] = true;
-        }
+    // Setup settings
+    unsafe {
+        ENABLE_RECURSIVE_REMAPPING = false;
     }
 
     // Start listening to keyboard
@@ -148,55 +160,7 @@ fn main() -> Result<()> {
     }
 }
 
-macro_rules! log_debug {
-    ($($arg:tt)*) => {
-        #[cfg(debug_assertions)]
-        println!($($arg)*)
-    };
-}
-
-macro_rules! call_next_hook {
-    ($n_code:expr, $w_param:expr, $l_param:expr) => {
-        return CallNextHookEx(WINDOW_HHOOK, $n_code, $w_param, $l_param);
-    };
-}
-
-macro_rules! event_handled {
-    () => {
-        return 1;
-    };
-}
-
-macro_rules! map_virtual_key {
-    ($key:expr) => {
-        MapVirtualKeyW($key as u32, MAPVK_VK_TO_VSC) as u8
-    };
-}
-
-macro_rules! keybd_trigger_key_up {
-    ($key:expr, $scan_code:expr) => {
-        keybd_event(
-            $key as u8,
-            $scan_code,
-            KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
-            0,
-        );
-    };
-}
-
-macro_rules! keybd_trigger_key_down {
-    ($key:expr, $scan_code:expr) => {
-        keybd_event($key as u8, $scan_code, KEYEVENTF_EXTENDEDKEY, 0);
-    };
-}
-
-#[derive(Debug)]
-struct LastSentRemapInfo {
-    sender_key: u8,
-    remap_key: u8,
-}
 static mut LAST_SENT_REMAP_INFO: Option<LastSentRemapInfo> = None;
-
 unsafe extern "system" fn remap_keys_callback(
     n_code: i32,
     mut w_param: WPARAM,
@@ -212,7 +176,8 @@ unsafe extern "system" fn remap_keys_callback(
     let trigger_key = kbd_struct.vkCode as usize;
     let trigger_key_u8 = trigger_key as u8;
 
-    // TODO: Ability to remove recursive remapping prevention
+    // TODO: Ability to remove recursive remapping prevention, just add simple IF condition there and it should work.
+
     // Prevent recursive remaping
     if let Some(last_sent_remap) = &LAST_SENT_REMAP_INFO {
         // Neccessary for syskey to stay down
