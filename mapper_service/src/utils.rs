@@ -51,3 +51,8 @@ pub struct LastSentRemapInfo {
     pub sender_key: u8,
     pub remap_key: u8,
 }
+
+#[allow(clippy::missing_safety_doc)]
+pub unsafe fn is_sys_key(key: u8) -> bool {
+    *crate::SYS_KEYS_TABLE.get(key as usize).unwrap_or(&false)
+}

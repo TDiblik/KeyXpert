@@ -3,11 +3,10 @@
 #![allow(unused_assignments)]
 
 pub mod utils;
+use utils::{is_sys_key, LastSentRemapInfo};
 
 use anyhow::{anyhow, Result};
-use utils::LastSentRemapInfo;
 use winapi::{
-    ctypes::c_int,
     shared::{
         minwindef::{LPARAM, LRESULT, WPARAM},
         windef::HHOOK__,
@@ -17,18 +16,8 @@ use winapi::{
         winuser::{
             keybd_event, CallNextHookEx, DispatchMessageW, GetMessageW, MapVirtualKeyW,
             SetWindowsHookExW, TranslateMessage, HC_ACTION, KBDLLHOOKSTRUCT, KEYEVENTF_EXTENDEDKEY,
-            KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC, MSG, VK_APPS, VK_ATTN, VK_BROWSER_BACK,
-            VK_BROWSER_FAVORITES, VK_BROWSER_FORWARD, VK_BROWSER_HOME, VK_BROWSER_REFRESH,
-            VK_BROWSER_SEARCH, VK_BROWSER_STOP, VK_CRSEL, VK_EREOF, VK_EXSEL, VK_ICO_00,
-            VK_ICO_CLEAR, VK_ICO_HELP, VK_LAUNCH_APP1, VK_LAUNCH_APP2, VK_LAUNCH_MAIL,
-            VK_LAUNCH_MEDIA_SELECT, VK_LCONTROL, VK_LMENU, VK_LSHIFT, VK_LWIN, VK_MEDIA_NEXT_TRACK,
-            VK_MEDIA_PLAY_PAUSE, VK_MEDIA_PREV_TRACK, VK_MEDIA_STOP, VK_NONAME, VK_NUMLOCK,
-            VK_OEM_1, VK_OEM_102, VK_OEM_2, VK_OEM_3, VK_OEM_4, VK_OEM_5, VK_OEM_6, VK_OEM_7,
-            VK_OEM_8, VK_OEM_AX, VK_OEM_CLEAR, VK_OEM_COMMA, VK_OEM_FJ_JISHO, VK_OEM_FJ_LOYA,
-            VK_OEM_FJ_MASSHOU, VK_OEM_FJ_ROYA, VK_OEM_FJ_TOUROKU, VK_OEM_MINUS, VK_OEM_PERIOD,
-            VK_OEM_PLUS, VK_PA1, VK_PACKET, VK_PLAY, VK_PROCESSKEY, VK_RCONTROL, VK_RMENU,
-            VK_RSHIFT, VK_RWIN, VK_SCROLL, VK_SLEEP, VK_VOLUME_DOWN, VK_VOLUME_MUTE, VK_VOLUME_UP,
-            VK_ZOOM, WH_KEYBOARD_LL, WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP,
+            KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC, MSG, WH_KEYBOARD_LL, WM_KEYDOWN, WM_KEYUP,
+            WM_SYSKEYDOWN, WM_SYSKEYUP,
         },
     },
 };
@@ -38,85 +27,12 @@ use winapi::{
 // fill the arrays with None/false and then add Some/true to places where keys are supposed to be
 // this allowes us to find REMAPPED_KEYS and SYS_KEYS in constant time (and search on stack instead of heap).
 static mut REMAPPED_KEYS: [Option<u8>; 256] = [None; 256];
-static mut SYS_KEYS_TABLE: [bool; 256] = [false; 256];
-const SYS_KEYS: [c_int; 63] = [
-    VK_LSHIFT,
-    VK_RSHIFT,
-    VK_LCONTROL,
-    VK_RCONTROL,
-    VK_LMENU,
-    VK_RMENU,
-    VK_LWIN,
-    VK_RWIN,
-    VK_APPS,
-    VK_SLEEP,
-    VK_NUMLOCK,
-    VK_SCROLL,
-    VK_OEM_FJ_JISHO,
-    VK_OEM_FJ_MASSHOU,
-    VK_OEM_FJ_TOUROKU,
-    VK_OEM_FJ_LOYA,
-    VK_OEM_FJ_ROYA,
-    VK_BROWSER_BACK,
-    VK_BROWSER_FORWARD,
-    VK_BROWSER_REFRESH,
-    VK_BROWSER_STOP,
-    VK_BROWSER_SEARCH,
-    VK_BROWSER_FAVORITES,
-    VK_BROWSER_HOME,
-    VK_VOLUME_MUTE,
-    VK_VOLUME_DOWN,
-    VK_VOLUME_UP,
-    VK_MEDIA_NEXT_TRACK,
-    VK_MEDIA_PREV_TRACK,
-    VK_MEDIA_STOP,
-    VK_MEDIA_PLAY_PAUSE,
-    VK_LAUNCH_MAIL,
-    VK_LAUNCH_MEDIA_SELECT,
-    VK_LAUNCH_APP1,
-    VK_LAUNCH_APP2,
-    VK_OEM_1,
-    VK_OEM_PLUS,
-    VK_OEM_COMMA,
-    VK_OEM_MINUS,
-    VK_OEM_PERIOD,
-    VK_OEM_2,
-    VK_OEM_3,
-    VK_OEM_4,
-    VK_OEM_5,
-    VK_OEM_6,
-    VK_OEM_7,
-    VK_OEM_8,
-    VK_OEM_AX,
-    VK_OEM_102,
-    VK_ICO_HELP,
-    VK_ICO_00,
-    VK_PROCESSKEY,
-    VK_ICO_CLEAR,
-    VK_PACKET,
-    VK_ATTN,
-    VK_CRSEL,
-    VK_EXSEL,
-    VK_EREOF,
-    VK_PLAY,
-    VK_ZOOM,
-    VK_NONAME,
-    VK_PA1,
-    VK_OEM_CLEAR,
-];
+include!(concat!(env!("OUT_DIR"), "/GENERATED_SYS_KEYS.rs"));
 
 static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
 static mut ENABLE_RECURSIVE_REMAPPING: bool = false;
 
 fn main() -> Result<()> {
-    // TODO: No reason to waste speed on program initialization, move to build script with SYS_KEYS variable.
-    // Fill syskey table
-    for &syskey in SYS_KEYS.iter() {
-        unsafe {
-            SYS_KEYS_TABLE[syskey as usize] = true;
-        }
-    }
-
     // TODO: Read settings
 
     // Setup remappings
@@ -250,8 +166,4 @@ unsafe extern "system" fn remap_keys_callback(
     w_param = WM_SYSKEYDOWN as usize;
 
     event_handled!();
-}
-
-unsafe fn is_sys_key(key: u8) -> bool {
-    *SYS_KEYS_TABLE.get(key as usize).unwrap_or(&false)
 }
