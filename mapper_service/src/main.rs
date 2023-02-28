@@ -109,6 +109,7 @@ static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
 static mut ENABLE_RECURSIVE_REMAPPING: bool = false;
 
 fn main() -> Result<()> {
+    // TODO: No reason to waste speed on program initialization, move to build script with SYS_KEYS variable.
     // Fill syskey table
     for &syskey in SYS_KEYS.iter() {
         unsafe {
@@ -135,7 +136,7 @@ fn main() -> Result<()> {
         REMAPPED_KEYS[164] = Some(162);
     }
 
-    // Setup settings
+    // Setup settings, currentlly only recursive remapping
     unsafe {
         ENABLE_RECURSIVE_REMAPPING = false;
     }
@@ -176,10 +177,10 @@ unsafe extern "system" fn remap_keys_callback(
     let trigger_key = kbd_struct.vkCode as usize;
     let trigger_key_u8 = trigger_key as u8;
 
-    // TODO: Ability to remove recursive remapping prevention, just add simple IF condition there and it should work.
-
     // Prevent recursive remaping
-    if let Some(last_sent_remap) = &LAST_SENT_REMAP_INFO {
+    if !ENABLE_RECURSIVE_REMAPPING && LAST_SENT_REMAP_INFO.is_some() {
+        let last_sent_remap = LAST_SENT_REMAP_INFO.as_ref().unwrap();
+
         // Neccessary for syskey to stay down
         if last_sent_remap.sender_key == trigger_key_u8 && w_param_u32 == WM_SYSKEYDOWN {
             event_handled!();

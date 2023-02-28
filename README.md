@@ -16,7 +16,7 @@ TODO:
 
 1. If you have `RECURSIVE_REMAPPING` enabled (not recommended, but somebody may like it), remapping from Normal keys (A, B, C, etc... ) onto
    System keys (ALT, CTRL, etc) is stable 1 level deep (this will not change, unless some good soul implements it and sends PR :D),
-   meaning that if you remap `A` to `ALT`, **it will work**, but once you proceed to remap `B` to `A`, your `ALT` will
+   meaning that if you remap `A` to `CTRL`, **it will work**, but once you proceed to remap `B` to `A`, your `CTRL` will
    get spammed with `KEYDOWN` commands instead of `SYS_KEYDOWN`. This can (and probably will) lead to undefined behavior. I don't plan on
    fixing this, because the number of people who will use `RECURSIVE_REMAPING`, then proceed to rebind Normal key onto System key and then
-   rebing another normal key onto the previous normal key is an asymptote :D (1/x, lame joke, sorry, meaning nearly 0 people will need this functionality) and time to implement it is just not worth it.
+   rebing another normal key onto the previous normal key is (imo) an asymptote :D (1/x, lame joke, sorry, meaning less than 1 person, nearly 0 people, will need this functionality) and time to implement it is just not worth it.
