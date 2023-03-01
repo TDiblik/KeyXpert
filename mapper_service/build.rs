@@ -107,7 +107,9 @@ fn main() {
                     "
                     #[test]
                     fn is_{}_sys_key() {{
-                        assert!(SYS_KEYS_TABLE[{}]);
+                        unsafe {{
+                            assert!(is_sys_key({}));
+                        }}
                     }}",
                     s, s
                 )
