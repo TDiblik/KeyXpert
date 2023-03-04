@@ -9,7 +9,7 @@ macro_rules! log_debug {
 #[macro_export]
 macro_rules! call_next_hook {
     ($n_code:expr, $w_param:expr, $l_param:expr) => {
-        return CallNextHookEx(WINDOW_HHOOK, $n_code, $w_param, $l_param);
+        return CallNextHookEx(WINDOW_HHOOK, $n_code, $w_param, $l_param)
     };
 }
 
@@ -44,12 +44,6 @@ macro_rules! keybd_trigger_key_down {
     ($key:expr, $scan_code:expr) => {
         keybd_event($key as u8, $scan_code, KEYEVENTF_EXTENDEDKEY, 0);
     };
-}
-
-#[derive(Debug)]
-pub struct LastSentRemapInfo {
-    pub sender_key: u8,
-    pub remap_key: u8,
 }
 
 #[allow(clippy::missing_safety_doc)]

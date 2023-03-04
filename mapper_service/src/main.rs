@@ -2,22 +2,29 @@
 // Rust correctlly shows warnings, however, in this context, those warnings are redundant and annoying.
 #![allow(unused_assignments)]
 
+pub mod models;
 pub mod utils;
-use utils::{is_sys_key, LastSentRemapInfo};
+
+use models::LastSentRemapInfo;
+use utils::is_sys_key;
 
 use anyhow::{anyhow, Result};
+use winapi::shared::minwindef::WPARAM;
+use winapi::um::winuser::{GetAsyncKeyState, VK_RMENU};
 use winapi::{
-    shared::{
-        minwindef::{LPARAM, LRESULT, WPARAM},
-        windef::HHOOK__,
+    shared::minwindef::LPARAM,
+    um::{
+        winuser::{CallNextHookEx, GetMessageW, SetWindowsHookExW, MSG, WH_KEYBOARD_LL},
+        winuser::{KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC},
     },
+};
+use winapi::{
+    shared::{minwindef::LRESULT, windef::HHOOK__},
     um::{
         libloaderapi::GetModuleHandleW,
         winuser::{
-            keybd_event, CallNextHookEx, DispatchMessageW, GetMessageW, MapVirtualKeyW,
-            SetWindowsHookExW, TranslateMessage, HC_ACTION, KBDLLHOOKSTRUCT, KEYEVENTF_EXTENDEDKEY,
-            KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC, MSG, WH_KEYBOARD_LL, WM_KEYDOWN, WM_KEYUP,
-            WM_SYSKEYDOWN, WM_SYSKEYUP,
+            keybd_event, DispatchMessageW, MapVirtualKeyW, TranslateMessage, HC_ACTION,
+            KBDLLHOOKSTRUCT, WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP,
         },
     },
 };
@@ -46,10 +53,15 @@ fn main() -> Result<()> {
         REMAPPED_KEYS[51] = Some(164);
         // a => ctrl
         REMAPPED_KEYS[65] = Some(162);
+
         // b => a
-        REMAPPED_KEYS[66] = Some(65);
+        // REMAPPED_KEYS[66] = Some(65);
+
         // alt => ctrl
         REMAPPED_KEYS[164] = Some(162);
+
+        // CAPS_LOCK => BACKSPACE
+        REMAPPED_KEYS[20] = Some(8);
     }
 
     // Setup settings, currentlly only recursive remapping
@@ -59,7 +71,6 @@ fn main() -> Result<()> {
 
     // Start listening to keyboard
     unsafe {
-        // Get the handle to the current module
         let h_mod = GetModuleHandleW(std::ptr::null());
 
         WINDOW_HHOOK = SetWindowsHookExW(WH_KEYBOARD_LL, Some(remap_keys_callback), h_mod, 0);
@@ -67,13 +78,16 @@ fn main() -> Result<()> {
             return Err(anyhow!("Failed to set WINDOWS_HOOK."));
         }
 
-        let messages: *mut MSG = std::ptr::null_mut();
-        while GetMessageW(messages, std::ptr::null_mut(), 0, 0) != 0 {
-            TranslateMessage(messages);
-            DispatchMessageW(messages);
+        let mut msg: MSG = std::mem::zeroed();
+        while GetMessageW(&mut msg, std::ptr::null_mut(), 0, 0) != 0 {
+            // TODO: Are these calls usefull? They have been in the original example,
+            // however I am sceptical that they do anything or even get called, since
+            // the program behaves exactly the same without them.
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
         }
 
-        std::process::exit((*messages).wParam as i32);
+        std::process::exit(msg.wParam as i32);
     }
 }
 
@@ -83,27 +97,49 @@ unsafe extern "system" fn remap_keys_callback(
     mut w_param: WPARAM,
     l_param: LPARAM,
 ) -> LRESULT {
+    // Guard clause, don't do anything unless n_code is telling us to.
     if n_code != HC_ACTION {
         call_next_hook!(n_code, w_param, l_param);
     }
 
-    let kbd_struct = &*(l_param as *const KBDLLHOOKSTRUCT);
-
+    // It's faster to call next hook right away, because we don't work with any other events
     let w_param_u32 = w_param as u32;
-    let trigger_key = kbd_struct.vkCode as usize;
-    let trigger_key_u8 = trigger_key as u8;
+    if w_param_u32 != WM_SYSKEYUP
+        && w_param_u32 != WM_KEYUP
+        && w_param_u32 != WM_SYSKEYDOWN
+        && w_param_u32 != WM_KEYDOWN
+    {
+        call_next_hook!(n_code, w_param, l_param);
+    }
 
-    // Prevent recursive remaping
+    // Remap shorcuts
+    let kbd_struct = &*(l_param as *const KBDLLHOOKSTRUCT);
+    let trigger_key = kbd_struct.vkCode as u8;
+
+    if (w_param_u32 == WM_KEYDOWN || w_param_u32 == WM_SYSKEYDOWN)
+        && trigger_key == b'8'
+        && GetAsyncKeyState(VK_RMENU) < 0
+    {
+        keybd_trigger_key_down!(VK_RMENU, map_virtual_key!(VK_RMENU));
+        keybd_trigger_key_down!(0x37, map_virtual_key!(0x37));
+        keybd_trigger_key_up!(0x37, map_virtual_key!(0x37));
+        keybd_trigger_key_up!(VK_RMENU, map_virtual_key!(VK_RMENU));
+
+        keybd_trigger_key_down!(VK_RMENU, map_virtual_key!(VK_RMENU));
+
+        event_handled!();
+    }
+
+    // Prevent recursive character remaping
     if !ENABLE_RECURSIVE_REMAPPING && LAST_SENT_REMAP_INFO.is_some() {
         let last_sent_remap = LAST_SENT_REMAP_INFO.as_ref().unwrap();
 
         // Neccessary for syskey to stay down
-        if last_sent_remap.sender_key == trigger_key_u8 && w_param_u32 == WM_SYSKEYDOWN {
+        if last_sent_remap.sender_key == trigger_key && w_param_u32 == WM_SYSKEYDOWN {
             event_handled!();
         }
 
-        // Send up commands to remapped keys
-        if last_sent_remap.sender_key == trigger_key_u8
+        if last_sent_remap.sender_key == trigger_key
             && (w_param_u32 == WM_SYSKEYUP || w_param_u32 == WM_KEYUP)
         {
             log_debug!("keyup recursive mapping event fired");
@@ -117,47 +153,39 @@ unsafe extern "system" fn remap_keys_callback(
             event_handled!();
         }
 
-        if last_sent_remap.remap_key == trigger_key_u8 {
+        if last_sent_remap.remap_key == trigger_key {
             call_next_hook!(n_code, w_param, l_param);
         }
     }
 
-    // Remap chars
-    let possibly_remapped_key_in_range: Option<&Option<u8>> = REMAPPED_KEYS.get(trigger_key);
-    if possibly_remapped_key_in_range.is_none() {
-        call_next_hook!(n_code, w_param, l_param);
-    }
+    let remapped_key: u8 = match REMAPPED_KEYS.get(trigger_key as usize) {
+        Some(Some(s)) => *s,
+        _ => call_next_hook!(n_code, w_param, l_param),
+    };
+    let scan_code = map_virtual_key!(remapped_key);
 
-    let possibly_remapped_key: &Option<u8> = possibly_remapped_key_in_range.unwrap();
-    if possibly_remapped_key.is_none() {
-        call_next_hook!(n_code, w_param, l_param);
-    }
-
-    let remmaped_key: u8 = possibly_remapped_key.unwrap();
-    let scan_code = map_virtual_key!(remmaped_key);
-
-    // hodling SYSKEY || normal buttons down || pressed syskey
+    // holding SYSKEY || normal buttons down || pressed syskey
     if w_param_u32 == WM_SYSKEYDOWN
-        || (w_param_u32 == WM_KEYDOWN && !is_sys_key(trigger_key_u8) && !is_sys_key(remmaped_key))
-        || (w_param_u32 == WM_KEYDOWN && is_sys_key(remmaped_key) && LAST_SENT_REMAP_INFO.is_none())
+        || (w_param_u32 == WM_KEYDOWN && !is_sys_key(trigger_key) && !is_sys_key(remapped_key))
+        || (w_param_u32 == WM_KEYDOWN && is_sys_key(remapped_key) && LAST_SENT_REMAP_INFO.is_none())
     {
         log_debug!("keydown event fired");
 
         LAST_SENT_REMAP_INFO = Some(LastSentRemapInfo {
-            sender_key: trigger_key_u8,
-            remap_key: remmaped_key,
+            sender_key: trigger_key,
+            remap_key: remapped_key,
         });
-        keybd_trigger_key_down!(remmaped_key, scan_code);
+        keybd_trigger_key_down!(remapped_key, scan_code);
 
         event_handled!();
     }
 
-    // This will get triggered only when recursive remap is OFF
+    // This will get triggered only when recursive remap is ON
     if w_param_u32 == WM_KEYUP {
         log_debug!("keyup event fired");
 
         LAST_SENT_REMAP_INFO = None;
-        keybd_trigger_key_up!(remmaped_key, scan_code);
+        keybd_trigger_key_up!(remapped_key, scan_code);
 
         event_handled!();
     }
