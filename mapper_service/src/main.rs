@@ -5,12 +5,15 @@
 pub mod models;
 pub mod utils;
 
-use models::LastSentRemapInfo;
+use models::{LastSentRemapInfo, RemappedShortcut};
 use utils::is_sys_key;
 
 use anyhow::{anyhow, Result};
 use winapi::shared::minwindef::WPARAM;
-use winapi::um::winuser::{GetAsyncKeyState, VK_RMENU};
+use winapi::um::winuser::{
+    GetAsyncKeyState, VK_LCONTROL, VK_LMENU, VK_LSHIFT, VK_LWIN, VK_RCONTROL, VK_RMENU, VK_RSHIFT,
+    VK_RWIN,
+};
 use winapi::{
     shared::minwindef::LPARAM,
     um::{
@@ -34,10 +37,15 @@ use winapi::{
 // fill the arrays with None/false and then add Some/true to places where keys are supposed to be
 // this allowes us to find REMAPPED_KEYS and SYS_KEYS in constant time (and search on stack instead of heap).
 static mut REMAPPED_KEYS: [Option<u8>; 256] = [None; 256];
+
+static mut REMAPPED_SHORTCUTS: Vec<RemappedShortcut> = vec![];
+static mut REMAPPED_SHORTCUTS_CONTAIN_KEY: [bool; 256] = [false; 256];
+
 include!(concat!(env!("OUT_DIR"), "/GENERATED_SYS_KEYS.rs"));
 
 static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
 static mut ENABLE_RECURSIVE_REMAPPING: bool = false;
+// static mut ENABLE_RECURSIVE_SHORTCUTS: bool = false;
 
 fn main() -> Result<()> {
     // TODO: Read settings
@@ -48,20 +56,43 @@ fn main() -> Result<()> {
         REMAPPED_KEYS[49] = Some(48);
         // é => ě
         REMAPPED_KEYS[48] = Some(50);
-
         // š => alt
         REMAPPED_KEYS[51] = Some(164);
         // a => ctrl
         REMAPPED_KEYS[65] = Some(162);
-
-        // b => a
-        // REMAPPED_KEYS[66] = Some(65);
-
         // alt => ctrl
         REMAPPED_KEYS[164] = Some(162);
-
         // CAPS_LOCK => BACKSPACE
         REMAPPED_KEYS[20] = Some(8);
+
+        // Win + P => Win + O
+        REMAPPED_SHORTCUTS_CONTAIN_KEY[0x50] = true;
+        REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
+            [VK_LWIN as u8, 0, 0, 0],
+            0x50,
+            [VK_LWIN as u8, 0, 0, 0],
+            0x4F,
+        ));
+
+        // ALTGr + 8 => ALTGr + 7
+        REMAPPED_SHORTCUTS_CONTAIN_KEY[0x38] = true;
+        REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
+            [VK_RMENU as u8, 0, 0, 0],
+            0x38,
+            [VK_RMENU as u8, 0, 0, 0],
+            0x37,
+        ));
+
+        // Win + Ctrl + P => Win + I
+        REMAPPED_SHORTCUTS_CONTAIN_KEY[0x50] = true;
+        REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
+            [VK_LWIN as u8, VK_LCONTROL as u8, 0, 0],
+            0x50,
+            [VK_LWIN as u8, 0, 0, 0],
+            0x49,
+        ));
+
+        log_debug!("{:?}", REMAPPED_SHORTCUTS);
     }
 
     // Setup settings, currentlly only recursive remapping
@@ -92,6 +123,7 @@ fn main() -> Result<()> {
 }
 
 static mut LAST_SENT_REMAP_INFO: Option<LastSentRemapInfo> = None;
+// static mut STOP_RECURSIVE_SHORTCUT: bool = false;
 unsafe extern "system" fn remap_keys_callback(
     n_code: i32,
     mut w_param: WPARAM,
@@ -102,32 +134,62 @@ unsafe extern "system" fn remap_keys_callback(
         call_next_hook!(n_code, w_param, l_param);
     }
 
-    // It's faster to call next hook right away, because we don't work with any other events
-    let w_param_u32 = w_param as u32;
-    if w_param_u32 != WM_SYSKEYUP
-        && w_param_u32 != WM_KEYUP
-        && w_param_u32 != WM_SYSKEYDOWN
-        && w_param_u32 != WM_KEYDOWN
-    {
-        call_next_hook!(n_code, w_param, l_param);
-    }
-
     // Remap shorcuts
     let kbd_struct = &*(l_param as *const KBDLLHOOKSTRUCT);
+    let w_param_u32 = w_param as u32;
     let trigger_key = kbd_struct.vkCode as u8;
 
     if (w_param_u32 == WM_KEYDOWN || w_param_u32 == WM_SYSKEYDOWN)
-        && trigger_key == b'8'
-        && GetAsyncKeyState(VK_RMENU) < 0
+        && REMAPPED_SHORTCUTS_CONTAIN_KEY[trigger_key as usize]
     {
-        keybd_trigger_key_down!(VK_RMENU, map_virtual_key!(VK_RMENU));
-        keybd_trigger_key_down!(0x37, map_virtual_key!(0x37));
-        keybd_trigger_key_up!(0x37, map_virtual_key!(0x37));
-        keybd_trigger_key_up!(VK_RMENU, map_virtual_key!(VK_RMENU));
+        let lwin_state = GetAsyncKeyState(VK_LWIN) < 0;
+        let lctrl_state = GetAsyncKeyState(VK_LCONTROL) < 0;
+        let lalt_state = GetAsyncKeyState(VK_LMENU) < 0;
+        let lshift_state = GetAsyncKeyState(VK_LSHIFT) < 0;
 
-        keybd_trigger_key_down!(VK_RMENU, map_virtual_key!(VK_RMENU));
+        let rwin_state = GetAsyncKeyState(VK_RWIN) < 0;
+        let rctrl_state = GetAsyncKeyState(VK_RCONTROL) < 0;
+        let ralt_state = GetAsyncKeyState(VK_RMENU) < 0;
+        let rshift_state = GetAsyncKeyState(VK_RSHIFT) < 0;
 
-        event_handled!();
+        if let Some(shortcut_info) = REMAPPED_SHORTCUTS.iter().find(|s| {
+            s.get_from_execution_char() == trigger_key
+                && s.mask_matches(
+                    lwin_state,
+                    lctrl_state,
+                    lalt_state,
+                    lshift_state,
+                    rwin_state,
+                    rctrl_state,
+                    ralt_state,
+                    rshift_state,
+                )
+        }) {
+            let keys_to_press = shortcut_info.get_to_shortcut();
+            for possible_key in keys_to_press {
+                let Some(key) = possible_key else {
+                    continue;
+                };
+                keybd_trigger_key_down!(key, map_virtual_key!(key));
+            }
+            for possible_key in keys_to_press.iter().rev() {
+                let Some(key) = *possible_key else {
+                    continue;
+                };
+                keybd_trigger_key_up!(key, map_virtual_key!(key));
+            }
+
+            let mut keys_to_leave_pressed = shortcut_info.get_to_shortcut();
+            keys_to_leave_pressed[4] = None;
+            for possible_key in keys_to_leave_pressed {
+                let Some(key) = possible_key else {
+                    continue;
+                };
+                keybd_trigger_key_down!(key, map_virtual_key!(key));
+            }
+
+            event_handled!();
+        }
     }
 
     // Prevent recursive character remaping
