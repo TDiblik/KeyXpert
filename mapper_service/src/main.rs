@@ -35,7 +35,7 @@ use winapi::{
 // https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 // Basically, we have at max 255 keys. What we do with REMAPPED_KEYS and SYS_KEYS_TABLE is
 // fill the arrays with None/false and then add Some/true to places where keys are supposed to be
-// this allowes us to find REMAPPED_KEYS and SYS_KEYS in constant time (and search on stack instead of heap).
+// this allowes us to find REMAPPED_KEYS, SYS_KEYS and REMAPPED_SHORTCUTS_CONTAIN_KEY in constant time, search on stack instead of heap and most likely use array inside CPU cache (this depends on CPU tho).
 static mut REMAPPED_KEYS: [Option<u8>; 256] = [None; 256];
 
 static mut REMAPPED_SHORTCUTS: Vec<RemappedShortcut> = vec![];
@@ -45,7 +45,7 @@ include!(concat!(env!("OUT_DIR"), "/GENERATED_SYS_KEYS.rs"));
 
 static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
 static mut ENABLE_RECURSIVE_REMAPPING: bool = false;
-// static mut ENABLE_RECURSIVE_SHORTCUTS: bool = false;
+static mut ENABLE_RECURSIVE_SHORTCUTS: bool = false;
 
 fn main() -> Result<()> {
     // TODO: Read settings
@@ -60,6 +60,8 @@ fn main() -> Result<()> {
         REMAPPED_KEYS[51] = Some(164);
         // a => ctrl
         REMAPPED_KEYS[65] = Some(162);
+        // o => a
+        REMAPPED_KEYS[0x4F] = Some(0x41);
         // alt => ctrl
         REMAPPED_KEYS[164] = Some(162);
         // CAPS_LOCK => BACKSPACE
@@ -88,6 +90,15 @@ fn main() -> Result<()> {
         REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
             [VK_LWIN as u8, VK_LCONTROL as u8, 0, 0],
             0x50,
+            [VK_LWIN as u8, 0, 0, 0],
+            0x49,
+        ));
+
+        // Win + B => Win + I
+        REMAPPED_SHORTCUTS_CONTAIN_KEY[0x42] = true;
+        REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
+            [VK_LWIN as u8, 0, 0, 0],
+            0x42,
             [VK_LWIN as u8, 0, 0, 0],
             0x49,
         ));
@@ -142,6 +153,10 @@ unsafe extern "system" fn remap_keys_callback(
     let w_param_u32 = w_param as u32;
     let trigger_key = kbd_struct.vkCode as u8;
 
+    if !ENABLE_RECURSIVE_SHORTCUTS && STOP_RECURSIVE_SHORTCUT {
+        call_next_hook!(n_code, w_param, l_param);
+    }
+
     if (w_param_u32 == WM_KEYDOWN || w_param_u32 == WM_SYSKEYDOWN)
         && REMAPPED_SHORTCUTS_CONTAIN_KEY[trigger_key as usize]
     {
@@ -168,6 +183,8 @@ unsafe extern "system" fn remap_keys_callback(
                     rshift_state,
                 )
         }) {
+            STOP_RECURSIVE_SHORTCUT = true;
+
             let mut keys_to_leave_pressed = shortcut_info.get_from_shortcut();
             for possible_key in keys_to_leave_pressed.iter().rev() {
                 let Some(key) = *possible_key else {
@@ -198,6 +215,7 @@ unsafe extern "system" fn remap_keys_callback(
                 keybd_trigger_key_down!(key, map_virtual_key!(key));
             }
 
+            STOP_RECURSIVE_SHORTCUT = false;
             event_handled!();
         }
     }
