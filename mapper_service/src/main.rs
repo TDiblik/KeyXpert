@@ -122,8 +122,11 @@ fn main() -> Result<()> {
     }
 }
 
+// I could use kbd_struct.dwExtraInfo instead of static muts,
+// however I currently like this approach more.
 static mut LAST_SENT_REMAP_INFO: Option<LastSentRemapInfo> = None;
-// static mut STOP_RECURSIVE_SHORTCUT: bool = false;
+static mut STOP_RECURSIVE_SHORTCUT: bool = false;
+
 unsafe extern "system" fn remap_keys_callback(
     n_code: i32,
     mut w_param: WPARAM,
@@ -165,6 +168,14 @@ unsafe extern "system" fn remap_keys_callback(
                     rshift_state,
                 )
         }) {
+            let mut keys_to_leave_pressed = shortcut_info.get_from_shortcut();
+            for possible_key in keys_to_leave_pressed.iter().rev() {
+                let Some(key) = *possible_key else {
+                    continue;
+                };
+                keybd_trigger_key_up!(key, map_virtual_key!(key));
+            }
+
             let keys_to_press = shortcut_info.get_to_shortcut();
             for possible_key in keys_to_press {
                 let Some(key) = possible_key else {
@@ -179,7 +190,6 @@ unsafe extern "system" fn remap_keys_callback(
                 keybd_trigger_key_up!(key, map_virtual_key!(key));
             }
 
-            let mut keys_to_leave_pressed = shortcut_info.get_to_shortcut();
             keys_to_leave_pressed[4] = None;
             for possible_key in keys_to_leave_pressed {
                 let Some(key) = possible_key else {
