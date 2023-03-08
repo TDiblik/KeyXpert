@@ -1,7 +1,6 @@
 TODO:
 
 - Read settings from json
-- Remap shortcuts
 - Add settings UI
   - base UI
     - ability to remap keys
