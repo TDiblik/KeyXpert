@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use tauri::{WindowBuilder, WindowUrl};
 use winapi::{shared::minwindef::BYTE, um::winuser::GetKeyboardState};
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -17,6 +18,15 @@ fn greet(name: &str) -> String {
 
 fn main() {
     tauri::Builder::default()
+        .setup(|app| {
+            WindowBuilder::new(app, "core", WindowUrl::App("index.html".into()))
+                .min_inner_size(750.0, 750.0)
+                .max_inner_size(1000.0, 1000.0)
+                .title("KeyXpert")
+                .build()?;
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
