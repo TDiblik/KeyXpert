@@ -1,6 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod commands;
+mod constants;
+
 use tauri::{WindowBuilder, WindowUrl};
 use winapi::{shared::minwindef::BYTE, um::winuser::GetKeyboardState};
 
@@ -20,8 +23,8 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             WindowBuilder::new(app, "core", WindowUrl::App("index.html".into()))
-                .min_inner_size(750.0, 750.0)
-                .max_inner_size(1000.0, 1000.0)
+                .min_inner_size(750.0, 650.0)
+                .max_inner_size(1250.0, 750.0)
                 .title("KeyXpert")
                 .build()?;
 

@@ -11,7 +11,7 @@
   --green: #49b285;
 
   --border-radius: 8px;
-  --key-size: 23px;
+  --key-size: 16px;
 }
 
 html,
@@ -36,6 +36,9 @@ body {
   -moz-font-feature-settings: "lnum" !important;
   font-feature-settings: "lnum" !important;
 }
+*:hover {
+  cursor: default;
+}
 
 .btn {
   border-radius: var(--border-radius);
@@ -45,15 +48,21 @@ body {
   width: 130px;
   font-weight: 500 !important;
 }
+.btn:hover {
+  cursor: pointer;
+}
 
 .btn.primary {
   background-color: var(--blue);
   border-color: var(--blue);
 }
-
 .btn.delete {
   background-color: var(--red);
   border-color: var(--red);
+}
+.btn.save {
+  background-color: var(--green);
+  border-color: var(--green);
 }
 
 .header {
@@ -62,15 +71,16 @@ body {
 }
 
 .sub-heading {
-  font-size: 32px;
-  line-height: 42px;
+  font-size: 28px;
+  line-height: 32px;
   margin-bottom: 12px;
+  font-weight: 500 !important;
 }
 
 .container {
   display: flex;
   flex-direction: column;
-  margin: 0 10%;
+  margin: 0 7.5%;
 }
 
 .header-row {
@@ -110,13 +120,14 @@ body {
 #profile-selector > option {
   color: var(--white);
 }
+/* TODO: Profile selector option on:hover cursor: pointer */
 
 .profile-actions * {
   margin-right: 10px;
 }
 
 .rebind-list {
-  margin-top: 45px;
+  margin-top: 25px;
 }
 
 .rebind-item {
@@ -127,6 +138,19 @@ body {
   background-color: var(--light-black);
   border-radius: var(--border-radius);
   padding: 7.5px 0px;
+  overflow-x: auto;
+}
+
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: var(--border-radius);
+  background-color: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .keys-container {
@@ -137,14 +161,13 @@ body {
 }
 
 .key {
-  padding: 4px 25px;
+  padding: 7.5px 15px;
   font-size: var(--key-size);
-  line-height: 30px;
+  font-weight: 500 !important;
+  line-height: var(--key-size);
   border: 2px solid var(--gray);
   border-radius: var(--border-radius);
-}
-.key:hover {
-  cursor: default;
+  white-space: nowrap;
 }
 
 .key.new {
@@ -167,6 +190,32 @@ body {
 .from-to-label {
   margin: 0 20px;
 }
-.from-to-label:hover {
-  cursor: default;
+
+.add-item-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+.add-item {
+  height: 42px;
+}
+.add-item:hover {
+  cursor: pointer;
+}
+
+.bottom-row {
+  margin-top: 25px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.is-active-wrapper > input:hover {
+  cursor: pointer;
+}
+
+.save-button-wrapper {
+  margin-left: auto;
 }
