@@ -31,13 +31,12 @@
     <div class="rebind-item">
       <div class="keys-container">
         <div class="key"> A </div>
-        <!-- <div class="key"> A </div> -->
-        <div class="edit-pen"> 
-          <img src="/public/edit-pen.svg" />
-        </div>
+        <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
       </div>
+      <span class="from-to-label">to</span>
       <div class="keys-container">
         <div class="key new"> B </div>
+        <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
       </div>
       <div class="remove-container">
         <button class="btn delete">Delete</button>

@@ -11,6 +11,7 @@
   --green: #49b285;
 
   --border-radius: 8px;
+  --key-size: 23px;
 }
 
 html,
@@ -62,7 +63,7 @@ body {
 
 .sub-heading {
   font-size: 32px;
-  line-height: 40px;
+  line-height: 42px;
   margin-bottom: 12px;
 }
 
@@ -132,14 +133,18 @@ body {
   display: flex;
   gap: 10px;
   margin: 0px 15px;
+  align-items: center;
 }
 
 .key {
   padding: 4px 25px;
-  font-size: 28px;
+  font-size: var(--key-size);
   line-height: 30px;
   border: 2px solid var(--gray);
   border-radius: var(--border-radius);
+}
+.key:hover {
+  cursor: default;
 }
 
 .key.new {
@@ -149,4 +154,19 @@ body {
 .remove-container {
   margin-left: auto;
   margin-right: 10px;
+}
+
+.edit-pen {
+  height: var(--key-size);
+  margin-left: 5px;
+}
+.edit-pen:hover {
+  cursor: pointer;
+}
+
+.from-to-label {
+  margin: 0 20px;
+}
+.from-to-label:hover {
+  cursor: default;
 }
