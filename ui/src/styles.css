@@ -11,7 +11,7 @@
   --green: #49b285;
 
   --border-radius: 8px;
-  --key-size: 16px;
+  --key-size: 18px;
 
   --button-zoom: 1.2;
 }
@@ -146,6 +146,12 @@ input[type="checkbox"]:hover {
 .label {
   font-size: 20px;
   line-height: 22px;
+}
+
+.img-btn-wrapper {
+  border: 0;
+  appearance: none;
+  background-color: inherit;
 }
 
 .container {

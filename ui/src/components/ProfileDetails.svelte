@@ -2,6 +2,7 @@
   import { invoke } from "@tauri-apps/api/tauri"
   import type { Profile, ProfileDetailsInfo } from "src/models";
   import { onMount } from "svelte";
+  import RebindList from "./RebindList.svelte";
 
   export let selected_profile: Profile;
   export let active_profile: string;
@@ -24,86 +25,10 @@
     <label for="is-active-main" id="is-active-main-wrapper">Use this profile</label>
   </div>
 </div>
+
+<RebindList title="Keys" on_add={() => console.log("alsje")} />
   
-<div class="rebind-list">
-  <div class="subheading">Keys</div>
-
-  <div class="rebind-item">
-    <div class="keys-container">
-      <div class="key"> A </div>
-      <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
-    </div>
-    <span class="from-to-label">to</span>
-    <div class="keys-container">
-      <div class="key new"> B </div>
-      <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
-    </div>
-    <div class="remove-container">
-      <button class="btn delete">Delete</button>
-    </div>
-  </div>
-
-  <div class="rebind-item">
-    <div class="keys-container">
-      <div class="key"> A </div>
-      <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
-    </div>
-    <span class="from-to-label">to</span>
-    <div class="keys-container">
-      <div class="key new"> B </div>
-      <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
-    </div>
-    <div class="remove-container">
-      <button class="btn delete">Delete</button>
-    </div>
-  </div>
-  
-  <div class="add-item-container">
-    <img class="add-item" src="/plus-circle-fill.svg" alt="add button" />
-  </div>
-</div>
-
-<div class="rebind-list">
-  <div class="subheading">Shortcuts</div>
-
-  <div class="rebind-item">
-    <div class="keys-container">
-      <div class="key"> A </div>
-      <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
-    </div>
-    <span class="from-to-label">to</span>
-    <div class="keys-container">
-      <div class="key new"> B </div>
-      <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
-    </div>
-    <div class="remove-container">
-      <button class="btn delete">Delete</button>
-    </div>
-  </div>
-
-  <div class="rebind-item">
-    <div class="keys-container">
-      <div class="key"> Ctrl (left) </div>
-      <div class="key"> Alt (right) </div>
-      <div class="key"> ` </div>
-      <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
-    </div>
-    <span class="from-to-label">to</span>
-    <div class="keys-container">
-      <div class="key new"> Ctrl (left) </div>
-      <div class="key new"> Alt (right) </div>
-      <div class="key new"> Ý </div>
-      <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
-    </div>
-    <div class="remove-container">
-      <button class="btn delete">Delete</button>
-    </div>
-  </div>
-  
-  <div class="add-item-container">
-    <img class="add-item" src="/plus-circle-fill.svg" alt="add button" />
-  </div>
-</div>
+<!-- <RebindList title="Shortcuts" on_add={() => console.log("b")} /> -->
 
 <div class="bottom-row">
   <div class="save-button-wrapper">
@@ -138,73 +63,6 @@
 
 #is-active-main-wrapper {
   margin-left: 5px;
-}
-
-.rebind-list {
-  margin-top: 10px;
-}
-
-.rebind-item {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-top: 10px;
-  background-color: var(--light-black);
-  border-radius: var(--border-radius);
-  padding: 7.5px 0px;
-  overflow-x: auto;
-}
-
-.keys-container {
-  display: flex;
-  gap: 10px;
-  margin: 0px 15px;
-  align-items: center;
-}
-
-.key {
-  padding: 7.5px 15px;
-  font-size: var(--key-size);
-  font-weight: 500 !important;
-  line-height: var(--key-size);
-  border: 2px solid var(--gray);
-  border-radius: var(--border-radius);
-  white-space: nowrap;
-}
-
-.key.new {
-  background-color: var(--blue);
-}
-
-.remove-container {
-  margin-left: auto;
-  margin-right: 10px;
-}
-
-.edit-pen {
-  height: var(--key-size);
-  margin-left: 5px;
-}
-.edit-pen:hover {
-  cursor: pointer;
-}
-
-.from-to-label {
-  margin: 0 20px;
-}
-
-.add-item-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  margin-top: 10px;
-}
-.add-item {
-  height: 42px;
-}
-.add-item:hover {
-  cursor: pointer;
 }
 
 .bottom-row {
