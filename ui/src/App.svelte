@@ -11,13 +11,20 @@
     service_config = await invoke("get_service_config", {});
     // TODO: actively used profile should get selected when app is opened ?? 
     initial_load = false;
-    console.log(service_config)
   });
 
   let selected_profile_id: string | undefined = undefined;
   async function create_profile() {
     selected_profile_id = await invoke("create_profile", {});
     service_config = await invoke("get_service_config", {});
+  }
+  
+  async function delete_profile() {
+    await invoke("delete_profile", {
+      idToDelete: selected_profile_id
+    });
+    service_config = await invoke("get_service_config");
+    selected_profile_id = undefined;
   }
 </script>
 
@@ -42,19 +49,21 @@
 
     <div class="profile-actions">
       <button class="btn primary" on:click={create_profile}>Add profile</button>
-      <button class="btn delete">Delete profile</button>
+      <button class="btn delete" on:click={delete_profile}>Delete profile</button>
+
     </div>
   </div>
   
-  {#if selected_profile_id != undefined && selected_profile_id.length > 0}
-    {#key selected_profile_id}
-      <ProfileDetails 
-        active_profile={service_config.active_profile}
-        selected_profile={
-          service_config.profiles.find(s => s.id === selected_profile_id)
-        } 
-      />
-    {/key}
-  {/if}
+  {#key selected_profile_id}
+    {#if selected_profile_id != undefined && selected_profile_id.length > 0}
+        {@const selected_profile = service_config?.profiles.find(s => s.id === selected_profile_id)}
+        {#if selected_profile != null}
+          <ProfileDetails 
+            active_profile={service_config.active_profile}
+            selected_profile={selected_profile} 
+          />
+      {/if}
+    {/if}
+  {/key}
 </main>
 {/if}
