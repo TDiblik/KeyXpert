@@ -3,6 +3,8 @@
 
 mod commands;
 mod constants;
+mod models;
+mod utils;
 
 use tauri::{WindowBuilder, WindowUrl};
 use winapi::{shared::minwindef::BYTE, um::winuser::GetKeyboardState};
@@ -30,7 +32,11 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            commands::get_service_config,
+            commands::create_profile
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
