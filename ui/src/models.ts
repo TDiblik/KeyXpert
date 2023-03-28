@@ -10,6 +10,10 @@ export interface Profile {
   shortcut_remaps: ShortcutRemap[];
 }
 
+export interface ProfileDetailsInfo extends Profile {
+  use_this_profile: boolean;
+}
+
 export interface KeyRemap {
   from: number;
   to: number;

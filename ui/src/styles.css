@@ -12,6 +12,8 @@
 
   --border-radius: 8px;
   --key-size: 16px;
+
+  --button-zoom: 1.2;
 }
 
 html,
@@ -77,16 +79,73 @@ body {
   box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
+/* TODO: select option on:hover cursor: pointer */
+select {
+  border-radius: var(--border-radius);
+  border-width: 1.5px;
+  border-color: var(--gray);
+  color: var(--white);
+  background-color: var(--black);
+  padding: 5px 10px;
+}
+select:hover {
+  cursor: pointer;
+}
+select > option {
+  color: var(--white);
+}
+
+input[type="text"] {
+  border-radius: var(--border-radius);
+  border-width: 1.5px;
+  border-color: var(--gray);
+  color: var(--white);
+  background-color: var(--black);
+  padding: 5px 10px;
+}
+input[type="text"]:hover {
+  cursor: text;
+}
+
+input[type="checkbox"] {
+  border-radius: var(--border-radius);
+  border-width: 1.5px;
+  border-color: var(--gray);
+  color: var(--white);
+  background-color: var(--black);
+  padding: 5px 10px;
+
+  zoom: var(--button-zoom);
+  transform: scale(var(--button-zoom));
+  -ms-transform: scale(var(--button-zoom));
+  -webkit-transform: scale(var(--button-zoom));
+  -o-transform: scale(var(--button-zoom));
+  -moz-transform: scale(var(--button-zoom));
+  transform-origin: 0 0;
+  -ms-transform-origin: 0 0;
+  -webkit-transform-origin: 0 0;
+  -o-transform-origin: 0 0;
+  -moz-transform-origin: 0 0;
+}
+input[type="checkbox"]:hover {
+  cursor: pointer;
+}
+
 .header {
   font-size: 40px;
   text-align: center;
 }
 
-.sub-heading {
-  font-size: 28px;
-  line-height: 32px;
+.subheading {
+  font-size: 22px;
+  line-height: 24px;
   margin-bottom: 12px;
-  font-weight: 500 !important;
+  /* font-weight: 500 !important; */
+}
+
+.label {
+  font-size: 20px;
+  line-height: 22px;
 }
 
 .container {
@@ -119,20 +178,7 @@ body {
 
 #profile-selector {
   width: 45%;
-  border-radius: var(--border-radius);
-  border-width: 1.5px;
-  border-color: var(--gray);
-  color: var(--white);
-  background-color: var(--black);
-  padding: 5px 10px;
 }
-#profile-selector:hover {
-  cursor: pointer;
-}
-#profile-selector > option {
-  color: var(--white);
-}
-/* TODO: Profile selector option on:hover cursor: pointer */
 
 .profile-actions * {
   margin-right: 10px;

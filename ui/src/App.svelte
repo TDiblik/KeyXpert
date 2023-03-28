@@ -9,23 +9,15 @@
   let service_config: ServiceConfig | undefined = undefined;
   onMount(async () => {
     service_config = await invoke("get_service_config", {});
+    // TODO: actively used profile should get selected when app is opened ?? 
     initial_load = false;
     console.log(service_config)
   });
 
-  let selected_profile: string | undefined = undefined;
+  let selected_profile_id: string | undefined = undefined;
   async function create_profile() {
-    selected_profile = await invoke("create_profile", {});
+    selected_profile_id = await invoke("create_profile", {});
     service_config = await invoke("get_service_config", {});
-    
-    console.log(service_config);
-    console.log(selected_profile);
-  }
-  
-  $: console.log(selected_profile)
-  
-  function chage_profile() {
-    console.log("lasje");
   }
 </script>
 
@@ -41,7 +33,8 @@
   </div>
   
   <div class="profile-selection-row">
-    <select id="profile-selector" bind:value={selected_profile}>
+    <select id="profile-selector" bind:value={selected_profile_id}>
+      <option></option>
       {#each service_config?.profiles as profile}
         <option value={profile.id}>{profile.name}</option>
       {/each}
@@ -53,8 +46,15 @@
     </div>
   </div>
   
-  {#if selected_profile != undefined}
-    <ProfileDetails profile_id={selected_profile} />
+  {#if selected_profile_id != undefined && selected_profile_id.length > 0}
+    {#key selected_profile_id}
+      <ProfileDetails 
+        active_profile={service_config.active_profile}
+        selected_profile={
+          service_config.profiles.find(s => s.id === selected_profile_id)
+        } 
+      />
+    {/key}
   {/if}
 </main>
 {/if}

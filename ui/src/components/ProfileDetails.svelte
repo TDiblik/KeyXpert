@@ -1,17 +1,32 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri"
+  import type { Profile, ProfileDetailsInfo } from "src/models";
+  import { onMount } from "svelte";
 
-  export let profile_id: string = "";
+  export let selected_profile: Profile;
+  export let active_profile: string;
 
-  let greetMsg = ""
-  async function greet(){
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    greetMsg = await invoke("greet", { name })
-  }
+  let _profile_info: ProfileDetailsInfo = {
+    ...selected_profile,
+    use_this_profile: selected_profile.id === active_profile
+  };;
+  
+  $: console.log(_profile_info)
 </script>
+
+<div class="profile-info-row">
+  <div class="profile-name-wrapper">
+    <label for="profile-name" id="profile-name-label" class="label"> Name </label>
+    <input type="text" id="profile-name" name="profile-name" bind:value={_profile_info.name} />
+  </div>
+  <div class="is-active-wrapper">
+    <input name="is-active-main" id="is-active-main" type="checkbox" bind:checked={_profile_info.use_this_profile} />
+    <label for="is-active-main" id="is-active-main-wrapper">Use this profile</label>
+  </div>
+</div>
   
 <div class="rebind-list">
-  <div class="sub-heading">Keys</div>
+  <div class="subheading">Keys</div>
 
   <div class="rebind-item">
     <div class="keys-container">
@@ -49,7 +64,7 @@
 </div>
 
 <div class="rebind-list">
-  <div class="sub-heading">Shortcuts</div>
+  <div class="subheading">Shortcuts</div>
 
   <div class="rebind-item">
     <div class="keys-container">
@@ -91,18 +106,42 @@
 </div>
 
 <div class="bottom-row">
-  <div class="is-active-wrapper">
-    <input name="is_active_main" id="is_active_main" type="checkbox" />
-    <label for="is_active_main">Use this profile</label>
-  </div>
   <div class="save-button-wrapper">
     <button class="btn save">Save</button>
   </div>
 </div>
 
 <style>
+.profile-info-row {
+  margin-top: 35px;
+  margin-bottom: 5px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.profile-name-wrapper {
+  width: 70%;
+}
+
+#profile-name-label {
+  margin-right: 10px;
+}
+
+#profile-name {
+  width: 60%;
+}
+
+.is-active-wrapper {
+  margin-left: auto;
+}
+
+#is-active-main-wrapper {
+  margin-left: 5px;
+}
+
 .rebind-list {
-  margin-top: 25px;
+  margin-top: 10px;
 }
 
 .rebind-item {
@@ -169,17 +208,14 @@
 }
 
 .bottom-row {
-  margin-top: 25px;
+  margin-top: 15px;
   display: flex;
   flex-direction: row;
   align-items: center;
-}
-
-.is-active-wrapper > input:hover {
-  cursor: pointer;
+  justify-content: flex-end;
 }
 
 .save-button-wrapper {
-  margin-left: auto;
+  margin-bottom: 10px; /* should show scroll before btn overflows page */
 }
 </style>
