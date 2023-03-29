@@ -11,6 +11,16 @@ TODO:
   - UI registers mapper_service as a windows service that starts after startup
   - Select keyboard layout or ability to install new keyboard layout
 
+# Dev
+
+## Mapper service
+
+- TODO
+
+## UI
+
+- `npm run tauri dev`
+
 # Limitations
 
 1. If you have `RECURSIVE_REMAPPING` enabled (not recommended, but somebody may like it), remapping from Normal keys (A, B, C, etc... ) onto
