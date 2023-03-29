@@ -1,15 +1,31 @@
 <script lang="ts">
+  import type { KeyRemap } from "src/models";
   import RebindItem from "./RebindItem.svelte";
 
-
-    export let title: string;
-    export let on_add: () => void;
+  export let title: string;
+  export let bindings: KeyRemap[];
+  
+  function on_add() {
+    bindings = [...bindings, {
+      from: 0x41,
+      to: 0x42
+    }];
+  }
+  
+  function on_remove_item(index: number) {
+    let new_bindings = bindings;
+    new_bindings.splice(index, 1)
+    bindings = new_bindings;
+  }
+  
 </script>
 
 <div class="rebind-list">
   <div class="subheading">{title}</div>
   
-  <RebindItem/>
+  {#each bindings as binding, i}
+    <RebindItem remap={binding} on_delete={() => on_remove_item(i)} />
+  {/each}
   
   <div class="add-item-container">
     <button class="img-btn-wrapper" on:click={on_add}>

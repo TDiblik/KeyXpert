@@ -12,6 +12,20 @@
     use_this_profile: selected_profile.id === active_profile
   };;
   
+  let keys_bindings = [
+    // A => B
+    {
+      from: 0x41, 
+      to: 0x42
+    },
+    
+    // B => C
+    {
+      from: 0x42, 
+      to: 0x43
+    },
+  ];
+  
   $: console.log(_profile_info)
 </script>
 
@@ -26,7 +40,7 @@
   </div>
 </div>
 
-<RebindList title="Keys" on_add={() => console.log("alsje")} />
+<RebindList title="Keys" bind:bindings={keys_bindings} />
   
 <!-- <RebindList title="Shortcuts" on_add={() => console.log("b")} /> -->
 

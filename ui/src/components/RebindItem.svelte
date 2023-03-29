@@ -1,32 +1,18 @@
 <script lang="ts">
+  import type { KeyRemap } from "src/models";
   import Key from "./Key.svelte";
+  
+  export let remap: KeyRemap;
+  export let on_delete: () => void;
 
-    function change_key_state() {
-        console.log("lasje");
-    }
-    
-    window.addEventListener("keydown", (e) => {
-        // e.which === Widnows VK definitions
-        console.log(e)
-    })
 </script>
 
 <div class="rebind-item">
-  <!-- <div class="keys-container">
-    <div class="key"> A </div>
-    <button class="img-btn-wrapper" on:click={change_key_state}>
-        <img class="edit-pen" src="/edit-pen.svg" alt="edit button"  />
-    </button>
-  </div> -->
-  <Key is_new={false} />
+  <Key is_new={false} bind:current_key={remap.from} />
   <span class="from-to-label">to</span>
-  <Key is_new={true} />
-  <!-- <div class="keys-container">
-    <div class="key new"> B </div>
-    <img class="edit-pen" src="/edit-pen.svg" alt="edit button" />
-  </div> -->
+  <Key is_new={true} bind:current_key={remap.to} />
   <div class="remove-container">
-    <button class="btn delete">Delete</button>
+    <button class="btn delete" on:click={on_delete}>Delete</button>
   </div>
 </div>
 
