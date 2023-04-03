@@ -11,8 +11,8 @@
     // TODO: Sucks for non-alphabet characters
     function capture_key(e: KeyboardEvent) {
       // e.which === Windows VK definitions
+      console.log(e);
       current_key = e.which;
-      console.log(e.key.charCodeAt(0));
     }
     
     function change_key_state() {

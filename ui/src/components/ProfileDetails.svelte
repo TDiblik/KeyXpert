@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/tauri"
   import type { Profile, ProfileDetailsInfo } from "src/models";
-  import { onMount } from "svelte";
   import RebindList from "./RebindList.svelte";
 
   export let selected_profile: Profile;
@@ -26,6 +24,8 @@
     },
   ];
   
+  let shortcut_bindings = [];
+  
   $: console.log(_profile_info)
 </script>
 
@@ -40,9 +40,8 @@
   </div>
 </div>
 
-<RebindList title="Keys" bind:bindings={keys_bindings} />
-  
-<!-- <RebindList title="Shortcuts" on_add={() => console.log("b")} /> -->
+<RebindList title="Keys" bind:bindings={keys_bindings} is_shortcut={false} />
+<RebindList title="Shortcuts" bind:bindings={shortcut_bindings} is_shortcut={true}/>
 
 <div class="bottom-row">
   <div class="save-button-wrapper">

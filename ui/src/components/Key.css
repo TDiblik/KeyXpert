@@ -1,0 +1,28 @@
+.keys-container {
+  display: flex;
+  gap: 10px;
+  margin: 0px 15px;
+  align-items: center;
+}
+
+.key {
+  padding: 7.5px 15px;
+  font-size: var(--key-size);
+  font-weight: 500 !important;
+  line-height: var(--key-size);
+  border: 2px solid var(--gray);
+  border-radius: var(--border-radius);
+  white-space: nowrap;
+}
+
+.key.new {
+  background-color: var(--blue);
+}
+
+.edit-pen {
+  height: var(--key-size);
+  margin-left: 5px;
+}
+.edit-pen:hover {
+  cursor: pointer;
+}

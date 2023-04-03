@@ -1,15 +1,33 @@
 <script lang="ts">
-  import type { KeyRemap } from "src/models";
+  import type { KeyRemap, ShortcutRemap } from "src/models";
+
+
   import RebindItem from "./RebindItem.svelte";
 
   export let title: string;
-  export let bindings: KeyRemap[];
+  export let bindings: KeyRemap[] | ShortcutRemap[];
+  export let is_shortcut: boolean;
   
   function on_add() {
-    bindings = [...bindings, {
-      from: 0x41,
-      to: 0x42
-    }];
+    if (!is_shortcut) {
+      bindings = [
+        ...bindings, 
+        {
+          from: 0x41,
+          to: 0x42
+        }
+      ] as KeyRemap[];
+    } else {
+      bindings = [
+        ...bindings, 
+        {
+          from_shortcut_holding_keys: [1,2,3],
+          from_shortcut_execution_key: 0x41,
+          to_shortcut_holding_keys: [3,2,1],
+          to_shortcut_execution_key: 0x43,
+        }
+      ] as ShortcutRemap[];
+    }
   }
   
   function on_remove_item(index: number) {
@@ -24,7 +42,7 @@
   <div class="subheading">{title}</div>
   
   {#each bindings as binding, i}
-    <RebindItem remap={binding} on_delete={() => on_remove_item(i)} />
+    <RebindItem remap={binding} on_delete={() => on_remove_item(i)} is_shortcut={is_shortcut} />
   {/each}
   
   <div class="add-item-container">
