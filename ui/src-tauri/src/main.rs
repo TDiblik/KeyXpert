@@ -7,21 +7,9 @@ mod models;
 mod utils;
 
 use tauri::{WindowBuilder, WindowUrl};
-use winapi::{shared::minwindef::BYTE, um::winuser::GetKeyboardState};
-
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    let mut keyboard_state: [BYTE; 256] = [0; 256];
-    unsafe {
-        GetKeyboardState(keyboard_state.as_mut_ptr());
-    }
-    println!("{:?}", keyboard_state.map(|s| (s & 0x80) != 0));
-
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
 fn main() {
+    // TODO: Do not spawn mulitple windows on startup, just add limitations to the default one
     tauri::Builder::default()
         .setup(|app| {
             WindowBuilder::new(app, "core", WindowUrl::App("index.html".into()))
@@ -33,7 +21,6 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            greet,
             commands::get_service_config,
             commands::create_profile,
             commands::delete_profile

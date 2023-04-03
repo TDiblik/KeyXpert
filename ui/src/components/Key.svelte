@@ -1,20 +1,22 @@
 <script lang="ts">
+    import { invoke } from "@tauri-apps/api/tauri";
+    import { vk_to_string } from "../utils";
     import "./Key.css";
 
     export let is_new: boolean;
     export let current_key: number;
     
-    $: current_key_char = String.fromCharCode(current_key);
-
-    let is_key_changing = false;
-
     // TODO: Sucks for non-alphabet characters
-    function capture_key(e: KeyboardEvent) {
-      // e.which === Windows VK definitions
-      current_key = e.which;
-      console.log(e.key.charCodeAt(0));
+    $: current_key_char = vk_to_string(current_key);
+    async function capture_key(e: KeyboardEvent) {
+      // e.which || e.keyCode === Windows VK
+      current_key = e.which || e.keyCode;
+      e.cancelBubble = true;
+      e.preventDefault();
+      console.log(e);
     }
     
+    let is_key_changing = false;
     function change_key_state() {
         if (!is_key_changing) {
           window.addEventListener("keydown", capture_key, true);
