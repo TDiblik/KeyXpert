@@ -11,9 +11,10 @@
   --green: #49b285;
 
   --border-radius: 8px;
-  --key-size: 18px;
 
   --button-zoom: 1.2;
+  --key-size: 18px;
+  --outline-size: 0.25px;
 }
 
 html,
@@ -87,12 +88,26 @@ select {
   color: var(--white);
   background-color: var(--black);
   padding: 5px 10px;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+
+  background-image: url("/chevron-down.svg");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 30px;
+  padding-right: 35px;
 }
 select:hover {
   cursor: pointer;
 }
 select > option {
   color: var(--white);
+}
+select:focus {
+  outline: var(--outline-size) solid var(--white);
 }
 
 input[type="text"] {
@@ -105,6 +120,9 @@ input[type="text"] {
 }
 input[type="text"]:hover {
   cursor: text;
+}
+input[type="text"]:focus {
+  outline: var(--outline-size) solid var(--white);
 }
 
 input[type="checkbox"] {
