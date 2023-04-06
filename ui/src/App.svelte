@@ -7,23 +7,25 @@
   
   let initial_load = true;
   let service_config: ServiceConfig | undefined = undefined;
-  onMount(async () => {
+  async function update_service_config() {
     service_config = await invoke("get_service_config", {});
-    // TODO: actively used profile should get selected when app is opened ?? 
+  }
+
+  let selected_profile_id: string | undefined = undefined;
+  onMount(async () => {
+    await update_service_config();
+    selected_profile_id = service_config.active_profile;
     initial_load = false;
   });
 
-  let selected_profile_id: string | undefined = undefined;
   async function create_profile() {
     selected_profile_id = await invoke("create_profile", {});
-    service_config = await invoke("get_service_config", {});
+    await update_service_config();
   }
   
   async function delete_profile() {
-    await invoke("delete_profile", {
-      idToDelete: selected_profile_id
-    });
-    service_config = await invoke("get_service_config");
+    await invoke("delete_profile", { idToDelete: selected_profile_id });
+    await update_service_config();
     selected_profile_id = undefined;
   }
   
@@ -34,9 +36,8 @@
       add_padding_to_keycode_array(shortcut_remap.to_shortcut_holding_keys);
     }
 
-    await invoke("save_profile", {
-      profile: profile
-    });
+    await invoke("save_profile", { profile: profile });
+    await update_service_config();
   }
 </script>
 

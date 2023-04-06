@@ -38,11 +38,24 @@
     },
     "windows": [
       {
+        "title": "KeyXpert",
+        "theme": "Dark",
+
         "fullscreen": false,
         "resizable": true,
-        "title": "ui",
-        "width": 800,
-        "height": 600
+        "maximized": false,
+        "focus": true,
+        "alwaysOnTop": true,
+        "decorations": true,
+
+        "width": 750,
+        "height": 650,
+
+        "maxWidth": 1350,
+        "maxHeight": 850,
+
+        "minWidth": 750,
+        "minHeight": 650
       }
     ]
   }
