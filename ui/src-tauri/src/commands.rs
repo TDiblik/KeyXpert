@@ -38,7 +38,14 @@ pub fn delete_profile(id_to_delete: Uuid) {
         .expect("Unable to get service config file");
 
     if let Some(position_to_delete) = config.profiles.iter().position(|s| s.id == id_to_delete) {
-        config.profiles.remove(position_to_delete);
+        let deleted_profile = config.profiles.remove(position_to_delete);
+
+        // TODO: Rewrite this nested monstrosity as soon as if let chains are stable.
+        if let Some(active_profile) = config.active_profile {
+            if deleted_profile.id == active_profile {
+                config.active_profile = None;
+            }
+        }
     }
 
     utils::save_config(&constants::service_config_file_path(), &config)
@@ -54,12 +61,9 @@ pub fn save_profile(profile: ProfileSaveObj) {
         config.active_profile = Some(profile.id);
     }
 
-    let profile_to_change = config
-        .profiles
-        .iter_mut()
-        .find(|s| s.id == profile.id)
-        .expect("Unable to find profile by id");
-    *profile_to_change = profile.into();
+    if let Some(profile_to_change) = config.profiles.iter_mut().find(|s| s.id == profile.id) {
+        *profile_to_change = profile.into();
+    }
 
     utils::save_config(&constants::service_config_file_path(), &config)
         .expect("Unable to save new service config file");
