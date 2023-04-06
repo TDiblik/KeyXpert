@@ -1,9 +1,12 @@
 pub fn config_dir_path() -> String {
     format!(
-        "{}/.config/KeyXpert/",
+        "{}{}.config{}KeyXpert{}",
         home::home_dir()
             .expect("Home library unable to get home direcotry.")
-            .display()
+            .display(),
+        std::path::MAIN_SEPARATOR,
+        std::path::MAIN_SEPARATOR,
+        std::path::MAIN_SEPARATOR
     )
 }
 
