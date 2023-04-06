@@ -19,10 +19,14 @@
   background-color: var(--blue);
 }
 
-.edit-pen {
+.img-btn-wrapper:focus {
+  outline: none !important;
+}
+
+.edit-icon {
   height: var(--key-size);
   margin-left: 5px;
 }
-.edit-pen:hover {
+.edit-icon:hover {
   cursor: pointer;
 }
