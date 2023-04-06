@@ -16,7 +16,7 @@ export function vk_to_string(vk: number): String {
   // I've gone through some cases I caught during development (unsuprisingly a lot), but
   // it may contain many more bugs since it's AI generated, but it's OK for now...
   //
-  // TODO2: It would be cool to add images instead of text for some keys (minus, percentage, *, /, etc...)
+  // TODO2: It would be cool to add images instead of text for some keys (minus, percentage, *, /, enter, etc...)
   switch (vk) {
     case 0x08: return "BACK";
     case 0x09: return "TAB";
@@ -95,9 +95,6 @@ export function vk_to_string(vk: number): String {
     case 0xDB: return "LEFT_BRACKET";
     case 0xDC: return "BACKSLASH";
     case 0xDD: return "RIGHT_BRACKET";
-    case 0xDB: return "LEFT_BRACKET";
-    case 0xDC: return "BACKSLASH";
-    case 0xDD: return "RIGHT_BRACKET";
     case 0xDE: return "QUOTE";
     case 0xE5: return "IME_PROCESS";
     case 0xF6: return "ATTN";
@@ -114,6 +111,10 @@ export function vk_to_string(vk: number): String {
 }
 
 // prettier-ignore
+// references:
+// https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
+// and
+// https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 export function cover_special_vk_cases(original_vk: number, keycode: string): number {
   switch (keycode) {
     case "ShiftLeft": return 0xA0;
