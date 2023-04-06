@@ -2,7 +2,7 @@ use uuid::Uuid;
 
 use crate::{
     constants,
-    models::{Profile, ServiceConfig},
+    models::{Profile, ProfileSaveObj, ServiceConfig},
     utils,
 };
 
@@ -42,5 +42,25 @@ pub fn delete_profile(id_to_delete: Uuid) {
     }
 
     utils::save_config(&constants::service_config_file_path(), &config)
-        .expect("Unable to remvoe profile from service config file");
+        .expect("Unable to remove profile from service config file");
+}
+
+#[tauri::command]
+pub fn save_profile(profile: ProfileSaveObj) {
+    let mut config = utils::get_config::<ServiceConfig>(constants::service_config_file_path())
+        .expect("Unable to get service config file");
+
+    if profile.use_this_profile {
+        config.active_profile = Some(profile.id);
+    }
+
+    let profile_to_change = config
+        .profiles
+        .iter_mut()
+        .find(|s| s.id == profile.id)
+        .expect("Unable to find profile by id");
+    *profile_to_change = profile.into();
+
+    utils::save_config(&constants::service_config_file_path(), &config)
+        .expect("Unable to save new service config file");
 }

@@ -1,7 +1,5 @@
 <script lang="ts">
   import type { KeyRemap, ShortcutRemap } from "src/models";
-
-
   import RebindItem from "./RebindItem.svelte";
 
   export let title: string;

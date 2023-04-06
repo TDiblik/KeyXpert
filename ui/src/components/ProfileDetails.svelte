@@ -4,34 +4,12 @@
 
   export let selected_profile: Profile;
   export let active_profile: string;
+  export let on_save: (profile_info: ProfileDetailsInfo) => {};
 
   let _profile_info: ProfileDetailsInfo = {
     ...selected_profile,
     use_this_profile: selected_profile.id === active_profile
   };;
-  
-  let keys_bindings = [
-    // A => B
-    {
-      from: 0x41, 
-      to: 0x42
-    },
-    
-    // B => C
-    {
-      from: 0x42, 
-      to: 0x43
-    },
-  ];
-  
-  let shortcut_bindings = [
-    {
-      from_shortcut_holding_keys: [0xa1, 0xa2],
-      from_shortcut_execution_key: 0x41,
-      to_shortcut_holding_keys: [0xa1, 0xa2],
-      to_shortcut_execution_key: 0x43,
-    }
-  ];
   
   $: console.log(_profile_info)
 </script>
@@ -47,12 +25,12 @@
   </div>
 </div>
 
-<RebindList title="Keys" bind:bindings={keys_bindings} is_shortcut={false} />
-<RebindList title="Shortcuts" bind:bindings={shortcut_bindings} is_shortcut={true}/>
+<RebindList title="Keys" bind:bindings={_profile_info.key_remaps} is_shortcut={false} />
+<RebindList title="Shortcuts" bind:bindings={_profile_info.shortcut_remaps} is_shortcut={true}/>
 
 <div class="bottom-row">
   <div class="save-button-wrapper">
-    <button class="btn save">Save</button>
+    <button class="btn save" on:click={() => on_save(_profile_info)}>Save</button>
   </div>
 </div>
 

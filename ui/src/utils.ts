@@ -154,3 +154,9 @@ export function prevent_event_bubbling(e: KeyboardEvent): boolean {
   e.preventDefault();
   return false;
 }
+
+export function add_padding_to_keycode_array(new_holding_keys: number[]) {
+  while (new_holding_keys.length < 4) {
+    new_holding_keys.push(0);
+  }
+}

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri"
   import { onMount } from "svelte";
-
+  import type { ProfileDetailsInfo, ServiceConfig } from "./models";
+  import { add_padding_to_keycode_array } from "./utils";
   import ProfileDetails from './components/ProfileDetails.svelte';
-  import type { ServiceConfig } from "./models";
   
   let initial_load = true;
   let service_config: ServiceConfig | undefined = undefined;
@@ -25,6 +25,18 @@
     });
     service_config = await invoke("get_service_config");
     selected_profile_id = undefined;
+  }
+  
+  async function save_profile(profile: ProfileDetailsInfo) {
+    // Shortcut remap from/to requires array of 4 elements.
+    for (const shortcut_remap of profile.shortcut_remaps) {
+      add_padding_to_keycode_array(shortcut_remap.from_shortcut_holding_keys);
+      add_padding_to_keycode_array(shortcut_remap.to_shortcut_holding_keys);
+    }
+
+    await invoke("save_profile", {
+      profile: profile
+    });
   }
 </script>
 
@@ -61,6 +73,7 @@
           <ProfileDetails 
             active_profile={service_config.active_profile}
             selected_profile={selected_profile} 
+            on_save={save_profile}
           />
       {/if}
     {/if}

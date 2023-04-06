@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ServiceConfig {
     pub active_profile: Option<Uuid>,
     pub profiles: Vec<Profile>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Profile {
     pub id: Uuid,
     pub name: String,
@@ -27,16 +27,36 @@ impl Default for Profile {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+impl std::convert::From<ProfileSaveObj> for Profile {
+    fn from(val: ProfileSaveObj) -> Self {
+        Profile {
+            id: val.id,
+            name: val.name,
+            key_remaps: val.key_remaps,
+            shortcut_remaps: val.shortcut_remaps,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ProfileSaveObj {
+    pub id: Uuid,
+    pub name: String,
+    pub key_remaps: Vec<KeyRemap>,
+    pub shortcut_remaps: Vec<ShortcutRemap>,
+    pub use_this_profile: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct KeyRemap {
     pub from: u8,
     pub to: u8,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ShortcutRemap {
     pub from_shortcut_holding_keys: [u8; 4],
-    pub from_shorcut_execution_key: u8,
+    pub from_shortcut_execution_key: u8,
     pub to_shortcut_holding_keys: [u8; 4],
-    pub to_shorcut_execution_key: u8,
+    pub to_shortcut_execution_key: u8,
 }
