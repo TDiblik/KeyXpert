@@ -16,6 +16,7 @@ fn main() {
                 .min_inner_size(750.0, 650.0)
                 .max_inner_size(1250.0, 750.0)
                 .title("KeyXpert")
+                .theme(Some(tauri::Theme::Dark))
                 .build()?;
 
             Ok(())

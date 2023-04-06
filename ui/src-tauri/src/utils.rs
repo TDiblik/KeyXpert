@@ -8,18 +8,19 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::constants;
 
-pub fn get_config<T>(config_path_raw: &str) -> anyhow::Result<T>
+pub fn get_config<T>(config_path_raw: String) -> anyhow::Result<T>
 where
     T: Default + DeserializeOwned + Serialize,
 {
-    let config_dir_path = Path::new(constants::CONFIG_DIR_PATH);
+    let config_dir_path_raw = constants::config_dir_path();
+    let config_dir_path = Path::new(&config_dir_path_raw);
     if !config_dir_path.exists() {
         fs::create_dir_all(config_dir_path)?
     }
 
-    let config_path = Path::new(config_path_raw);
+    let config_path = Path::new(&config_path_raw);
     if !config_path.exists() {
-        save_config(config_path_raw, &T::default())?;
+        save_config(&config_path_raw, &T::default())?;
     };
 
     let config_file = File::open(config_path)?;
