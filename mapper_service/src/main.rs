@@ -102,61 +102,6 @@ fn setup() -> anyhow::Result<()> {
         ENABLE_RECURSIVE_REMAPPING = false;
     }
 
-    // unsafe {
-    //     // + => é
-    //     REMAPPED_KEYS[49] = Some(48);
-    //     // é => ě
-    //     REMAPPED_KEYS[48] = Some(50);
-    //     // š => alt
-    //     REMAPPED_KEYS[51] = Some(164);
-    //     // a => ctrl
-    //     REMAPPED_KEYS[65] = Some(162);
-    //     // o => a
-    //     REMAPPED_KEYS[0x4F] = Some(0x41);
-    //     // alt => ctrl
-    //     REMAPPED_KEYS[164] = Some(162);
-    //     // CAPS_LOCK => BACKSPACE
-    //     REMAPPED_KEYS[20] = Some(8);
-
-    //     // Win + P => Win + O
-    //     REMAPPED_SHORTCUTS_CONTAIN_KEY[0x50] = true;
-    //     REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
-    //         [VK_LWIN as u8, 0, 0, 0],
-    //         0x50,
-    //         [VK_LWIN as u8, 0, 0, 0],
-    //         0x4F,
-    //     ));
-
-    //     // ALTGr + 8 => ALTGr + 7
-    //     REMAPPED_SHORTCUTS_CONTAIN_KEY[0x38] = true;
-    //     REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
-    //         [VK_RMENU as u8, 0, 0, 0],
-    //         0x38,
-    //         [VK_RMENU as u8, 0, 0, 0],
-    //         0x37,
-    //     ));
-
-    //     // Win + Ctrl + P => Win + I
-    //     REMAPPED_SHORTCUTS_CONTAIN_KEY[0x50] = true;
-    //     REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
-    //         [VK_LWIN as u8, VK_LCONTROL as u8, 0, 0],
-    //         0x50,
-    //         [VK_LWIN as u8, 0, 0, 0],
-    //         0x49,
-    //     ));
-
-    //     // Win + B => Win + I
-    //     REMAPPED_SHORTCUTS_CONTAIN_KEY[0x42] = true;
-    //     REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
-    //         [VK_LWIN as u8, 0, 0, 0],
-    //         0x42,
-    //         [VK_LWIN as u8, 0, 0, 0],
-    //         0x49,
-    //     ));
-
-    //     log_debug!("{:?}", REMAPPED_SHORTCUTS);
-    // }
-
     Ok(())
 }
 

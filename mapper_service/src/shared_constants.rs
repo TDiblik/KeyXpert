@@ -1,4 +1,6 @@
-use std::fs;
+use std::time::SystemTime;
+
+use chrono::{DateTime, Utc};
 
 pub fn config_dir_path() -> String {
     format!(
@@ -21,14 +23,39 @@ pub fn service_config_file_path() -> String {
 }
 
 pub fn log_error(err: &anyhow::Error) {
-    let path_to_error_log = format!("{}error.log", config_dir_path());
-    fs::write(path_to_error_log, err.to_string()).unwrap_or_else(|_| {
-        println!(
-            "Unable to write into error log --- dumping into console: {}",
-            err
-        )
-    });
+    let now: DateTime<Utc> = SystemTime::now().into();
+    let error_formated = format!("[{}]: {}", now.format("%d.%m.%Y %H:%M:%S"), err);
+
+    #[cfg(not(debug_assertions))]
+    append_to_file(format!("{}error.log", config_dir_path()), &error_formated).unwrap_or_else(
+        |_| {
+            println!(
+                "Unable to write into error log --- dumping into console: {}",
+                error_formated
+            );
+        },
+    );
 
     #[cfg(debug_assertions)]
-    println!("debug log err: {}", err)
+    println!("debug log err: {}", error_formated);
+}
+
+#[cfg(not(debug_assertions))]
+fn append_to_file(raw_path: String, contents: &String) -> anyhow::Result<()> {
+    use std::{
+        fs::OpenOptions,
+        io::{BufWriter, Write},
+    };
+
+    let file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .append(true)
+        .truncate(false)
+        .open(raw_path)?;
+
+    let mut file_buffer = BufWriter::new(file);
+    writeln!(file_buffer, "{}", contents)?;
+
+    Ok(())
 }
