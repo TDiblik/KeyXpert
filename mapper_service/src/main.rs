@@ -5,10 +5,11 @@
 pub mod models;
 pub mod utils;
 
+use mapper_service::shared_constants::{self, log_error};
 use models::{LastSentRemapInfo, RemappedShortcut};
 use utils::is_sys_key;
 
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use winapi::shared::minwindef::WPARAM;
 use winapi::um::winuser::{
     GetAsyncKeyState, VK_LCONTROL, VK_LMENU, VK_LSHIFT, VK_LWIN, VK_RCONTROL, VK_RMENU, VK_RSHIFT,
@@ -47,90 +48,136 @@ static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
 static mut ENABLE_RECURSIVE_REMAPPING: bool = false;
 static mut ENABLE_RECURSIVE_SHORTCUTS: bool = false;
 
-fn main() -> Result<()> {
-    // TODO: Read settings
-
-    // Setup remappings
-    unsafe {
-        // + => é
-        REMAPPED_KEYS[49] = Some(48);
-        // é => ě
-        REMAPPED_KEYS[48] = Some(50);
-        // š => alt
-        REMAPPED_KEYS[51] = Some(164);
-        // a => ctrl
-        REMAPPED_KEYS[65] = Some(162);
-        // o => a
-        REMAPPED_KEYS[0x4F] = Some(0x41);
-        // alt => ctrl
-        REMAPPED_KEYS[164] = Some(162);
-        // CAPS_LOCK => BACKSPACE
-        REMAPPED_KEYS[20] = Some(8);
-
-        // Win + P => Win + O
-        REMAPPED_SHORTCUTS_CONTAIN_KEY[0x50] = true;
-        REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
-            [VK_LWIN as u8, 0, 0, 0],
-            0x50,
-            [VK_LWIN as u8, 0, 0, 0],
-            0x4F,
-        ));
-
-        // ALTGr + 8 => ALTGr + 7
-        REMAPPED_SHORTCUTS_CONTAIN_KEY[0x38] = true;
-        REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
-            [VK_RMENU as u8, 0, 0, 0],
-            0x38,
-            [VK_RMENU as u8, 0, 0, 0],
-            0x37,
-        ));
-
-        // Win + Ctrl + P => Win + I
-        REMAPPED_SHORTCUTS_CONTAIN_KEY[0x50] = true;
-        REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
-            [VK_LWIN as u8, VK_LCONTROL as u8, 0, 0],
-            0x50,
-            [VK_LWIN as u8, 0, 0, 0],
-            0x49,
-        ));
-
-        // Win + B => Win + I
-        REMAPPED_SHORTCUTS_CONTAIN_KEY[0x42] = true;
-        REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
-            [VK_LWIN as u8, 0, 0, 0],
-            0x42,
-            [VK_LWIN as u8, 0, 0, 0],
-            0x49,
-        ));
-
-        log_debug!("{:?}", REMAPPED_SHORTCUTS);
+fn main() -> anyhow::Result<()> {
+    if let Err(err) = setup() {
+        log_error(&err);
+        return Err(err);
     }
 
-    // Setup settings, currentlly only recursive remapping
+    if let Err(err) = unsafe { program_loop() } {
+        log_error(&err);
+        return Err(err);
+    }
+
+    Ok(())
+}
+
+fn setup() -> anyhow::Result<()> {
+    let Ok(service_config) = utils::get_service_config(shared_constants::service_config_file_path()) else {
+        return Err(anyhow!("Unable to get/parse service config file."));
+    };
+    let Some(active_profile_id) = service_config.active_profile else {
+        return Err(anyhow!("No profile active, shutting down."));
+    };
+
+    let Some(active_profile) = service_config.profiles.iter().find(|s| s.id == active_profile_id) else {
+        return Err(
+            anyhow!(
+                format!("Profiles ({}) do not include active profile id ({})", 
+                    service_config.profiles.iter().map(|s| s.id.to_string()).collect::<Vec<String>>().join(", "), 
+                    active_profile_id
+                )
+            )
+        );
+    };
+
+    for key_remap in active_profile.key_remaps.iter() {
+        unsafe { REMAPPED_KEYS[key_remap.from as usize] = Some(key_remap.to) }
+    }
+
+    for shortcut_remap in active_profile.shortcut_remaps.iter() {
+        unsafe {
+            REMAPPED_SHORTCUTS_CONTAIN_KEY[shortcut_remap.from_shortcut_execution_key as usize] =
+                true;
+            REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
+                shortcut_remap.from_shortcut_holding_keys,
+                shortcut_remap.from_shortcut_execution_key,
+                shortcut_remap.to_shortcut_holding_keys,
+                shortcut_remap.to_shortcut_execution_key,
+            ));
+        }
+    }
+
     unsafe {
         ENABLE_RECURSIVE_REMAPPING = false;
     }
 
-    // Start listening to keyboard
-    unsafe {
-        let h_mod = GetModuleHandleW(std::ptr::null());
+    // unsafe {
+    //     // + => é
+    //     REMAPPED_KEYS[49] = Some(48);
+    //     // é => ě
+    //     REMAPPED_KEYS[48] = Some(50);
+    //     // š => alt
+    //     REMAPPED_KEYS[51] = Some(164);
+    //     // a => ctrl
+    //     REMAPPED_KEYS[65] = Some(162);
+    //     // o => a
+    //     REMAPPED_KEYS[0x4F] = Some(0x41);
+    //     // alt => ctrl
+    //     REMAPPED_KEYS[164] = Some(162);
+    //     // CAPS_LOCK => BACKSPACE
+    //     REMAPPED_KEYS[20] = Some(8);
 
-        WINDOW_HHOOK = SetWindowsHookExW(WH_KEYBOARD_LL, Some(remap_keys_callback), h_mod, 0);
-        if WINDOW_HHOOK.is_null() {
-            return Err(anyhow!("Failed to set WINDOWS_HOOK."));
-        }
+    //     // Win + P => Win + O
+    //     REMAPPED_SHORTCUTS_CONTAIN_KEY[0x50] = true;
+    //     REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
+    //         [VK_LWIN as u8, 0, 0, 0],
+    //         0x50,
+    //         [VK_LWIN as u8, 0, 0, 0],
+    //         0x4F,
+    //     ));
 
-        let mut msg: MSG = std::mem::zeroed();
-        while GetMessageW(&mut msg, std::ptr::null_mut(), 0, 0) != 0 {
-            // TODO: Are these calls usefull? They have been in the original example,
-            // however I am sceptical that they do anything or even get called, since
-            // the program behaves exactly the same without them.
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        }
+    //     // ALTGr + 8 => ALTGr + 7
+    //     REMAPPED_SHORTCUTS_CONTAIN_KEY[0x38] = true;
+    //     REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
+    //         [VK_RMENU as u8, 0, 0, 0],
+    //         0x38,
+    //         [VK_RMENU as u8, 0, 0, 0],
+    //         0x37,
+    //     ));
 
-        std::process::exit(msg.wParam as i32);
+    //     // Win + Ctrl + P => Win + I
+    //     REMAPPED_SHORTCUTS_CONTAIN_KEY[0x50] = true;
+    //     REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
+    //         [VK_LWIN as u8, VK_LCONTROL as u8, 0, 0],
+    //         0x50,
+    //         [VK_LWIN as u8, 0, 0, 0],
+    //         0x49,
+    //     ));
+
+    //     // Win + B => Win + I
+    //     REMAPPED_SHORTCUTS_CONTAIN_KEY[0x42] = true;
+    //     REMAPPED_SHORTCUTS.push(RemappedShortcut::new(
+    //         [VK_LWIN as u8, 0, 0, 0],
+    //         0x42,
+    //         [VK_LWIN as u8, 0, 0, 0],
+    //         0x49,
+    //     ));
+
+    //     log_debug!("{:?}", REMAPPED_SHORTCUTS);
+    // }
+
+    Ok(())
+}
+
+unsafe fn program_loop() -> anyhow::Result<()> {
+    let h_mod = GetModuleHandleW(std::ptr::null());
+
+    WINDOW_HHOOK = SetWindowsHookExW(WH_KEYBOARD_LL, Some(remap_keys_callback), h_mod, 0);
+    if WINDOW_HHOOK.is_null() {
+        return Err(anyhow!("Failed to set WINDOWS_HOOK."));
     }
+
+    let mut msg: MSG = std::mem::zeroed();
+    while GetMessageW(&mut msg, std::ptr::null_mut(), 0, 0) != 0 {
+        // TODO: Are these calls usefull? They have been in the original example,
+        // however I am sceptical that they do anything or even get called, since
+        // the program behaves exactly the same without them. --- help needed from somebody who knows more about it.
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+
+    std::process::exit(msg.wParam as i32);
 }
 
 // I could use kbd_struct.dwExtraInfo instead of static muts,

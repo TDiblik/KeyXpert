@@ -4,14 +4,14 @@ use std::{
     path::Path,
 };
 
-use mapper_service::constants;
+use mapper_service::shared_constants;
 use serde::{de::DeserializeOwned, Serialize};
 
 pub fn get_config<T>(config_path_raw: String) -> anyhow::Result<T>
 where
     T: Default + DeserializeOwned + Serialize,
 {
-    let config_dir_path_raw = constants::config_dir_path();
+    let config_dir_path_raw = shared_constants::config_dir_path();
     let config_dir_path = Path::new(&config_dir_path_raw);
     if !config_dir_path.exists() {
         fs::create_dir_all(config_dir_path)?

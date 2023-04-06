@@ -1,14 +1,14 @@
-use mapper_service::constants;
+use mapper_service::{
+    shared_constants,
+    shared_models::{Profile, ServiceConfig},
+};
 use uuid::Uuid;
 
-use crate::{
-    models::{Profile, ProfileSaveObj, ServiceConfig},
-    utils,
-};
+use crate::{models::ProfileSaveObj, utils};
 
 #[tauri::command]
 pub fn get_service_config() -> ServiceConfig {
-    utils::get_config::<ServiceConfig>(constants::service_config_file_path())
+    utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path())
         .expect("Unable to get service config file")
 }
 
@@ -20,13 +20,14 @@ pub fn get_service_config() -> ServiceConfig {
 
 #[tauri::command]
 pub fn create_profile() -> Uuid {
-    let mut config = utils::get_config::<ServiceConfig>(constants::service_config_file_path())
-        .expect("Unable to get service config file");
+    let mut config =
+        utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path())
+            .expect("Unable to get service config file");
 
     let new_profile = Profile::default();
     let new_uuid = new_profile.id;
     config.profiles.push(new_profile);
-    utils::save_config(&constants::service_config_file_path(), &config)
+    utils::save_config(&shared_constants::service_config_file_path(), &config)
         .expect("Unable to add profile to service config file");
 
     new_uuid
@@ -34,8 +35,9 @@ pub fn create_profile() -> Uuid {
 
 #[tauri::command]
 pub fn delete_profile(id_to_delete: Uuid) {
-    let mut config = utils::get_config::<ServiceConfig>(constants::service_config_file_path())
-        .expect("Unable to get service config file");
+    let mut config =
+        utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path())
+            .expect("Unable to get service config file");
 
     if let Some(position_to_delete) = config.profiles.iter().position(|s| s.id == id_to_delete) {
         let deleted_profile = config.profiles.remove(position_to_delete);
@@ -48,14 +50,15 @@ pub fn delete_profile(id_to_delete: Uuid) {
         }
     }
 
-    utils::save_config(&constants::service_config_file_path(), &config)
+    utils::save_config(&shared_constants::service_config_file_path(), &config)
         .expect("Unable to remove profile from service config file");
 }
 
 #[tauri::command]
 pub fn save_profile(profile: ProfileSaveObj) {
-    let mut config = utils::get_config::<ServiceConfig>(constants::service_config_file_path())
-        .expect("Unable to get service config file");
+    let mut config =
+        utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path())
+            .expect("Unable to get service config file");
 
     if profile.use_this_profile {
         config.active_profile = Some(profile.id);
@@ -65,6 +68,6 @@ pub fn save_profile(profile: ProfileSaveObj) {
         *profile_to_change = profile.into();
     }
 
-    utils::save_config(&constants::service_config_file_path(), &config)
+    utils::save_config(&shared_constants::service_config_file_path(), &config)
         .expect("Unable to save new service config file");
 }

@@ -1,3 +1,12 @@
+use std::{fs::File, io::BufReader, path::Path};
+
+use mapper_service::shared_models::ServiceConfig;
+
+pub fn get_service_config(config_path_raw: String) -> anyhow::Result<ServiceConfig> {
+    let config_buf = BufReader::new(File::open(Path::new(&config_path_raw))?);
+    Ok(serde_json::from_reader(config_buf)?)
+}
+
 #[macro_export]
 macro_rules! log_debug {
     ($($arg:tt)*) => {
