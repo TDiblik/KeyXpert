@@ -4,9 +4,8 @@ use std::{
     path::Path,
 };
 
+use mapper_service::constants;
 use serde::{de::DeserializeOwned, Serialize};
-
-use crate::constants;
 
 pub fn get_config<T>(config_path_raw: String) -> anyhow::Result<T>
 where

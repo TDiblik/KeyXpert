@@ -1,7 +1,7 @@
+use mapper_service::constants;
 use uuid::Uuid;
 
 use crate::{
-    constants,
     models::{Profile, ProfileSaveObj, ServiceConfig},
     utils,
 };
