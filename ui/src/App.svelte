@@ -56,14 +56,14 @@
     <select id="profile-selector" bind:value={selected_profile_id}>
       <option></option>
       {#each service_config?.profiles as profile}
-        <option value={profile.id}>{profile.name}</option>
+        {@const is_active_profile = service_config?.active_profile === profile.id }
+        <option class={`${is_active_profile ? "active-profile" : ""}`} value={profile.id}>{profile.name}</option>
       {/each}
     </select>
 
     <div class="profile-actions">
       <button class="btn primary" on:click={create_profile}>Add profile</button>
       <button class="btn delete" on:click={delete_profile}>Delete profile</button>
-
     </div>
   </div>
   

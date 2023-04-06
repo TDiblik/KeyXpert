@@ -80,7 +80,6 @@ body {
   box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
-/* TODO: select option on:hover cursor: pointer */
 select {
   border-radius: var(--border-radius);
   border-width: 1.5px;
@@ -108,6 +107,15 @@ select > option {
 }
 select:focus {
   outline: var(--outline-size) solid var(--white);
+}
+select > option.active-profile:not(:checked) {
+  background-color: var(--blue) !important;
+}
+select > option.active-profile:checked:not(:hover) {
+  background-color: var(--blue) !important;
+}
+select > option:checked {
+  background-color: #767676 !important;
 }
 
 input[type="text"] {
