@@ -40,7 +40,7 @@ pub fn delete_profile(id_to_delete: Uuid) {
     if let Some(position_to_delete) = config.profiles.iter().position(|s| s.id == id_to_delete) {
         let deleted_profile = config.profiles.remove(position_to_delete);
 
-        // TODO: Rewrite this nested monstrosity as soon as if let chains are stable.
+        // TODO: Rewrite this nested monstrosity as soon as if let chains are stable. (https://github.com/rust-lang/rust/issues/53667)
         if let Some(active_profile) = config.active_profile {
             if deleted_profile.id == active_profile {
                 config.active_profile = None;
