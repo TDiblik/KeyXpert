@@ -24,7 +24,14 @@
     },
   ];
   
-  let shortcut_bindings = [];
+  let shortcut_bindings = [
+    {
+      from_shortcut_holding_keys: [0xa1, 0xa2],
+      from_shortcut_execution_key: 0x41,
+      to_shortcut_holding_keys: [0xa1, 0xa2],
+      to_shortcut_execution_key: 0x43,
+    }
+  ];
   
   $: console.log(_profile_info)
 </script>

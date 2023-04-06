@@ -1,5 +1,8 @@
+// References for hard coded values:
+// https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+// https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
+
 // prettier-ignore
-// references: https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 export function vk_to_string(vk: number): String {
   // 0-9 and A-Z range
   if (vk >= 0x30 && vk <= 0x5a) {
@@ -111,19 +114,37 @@ export function vk_to_string(vk: number): String {
 }
 
 // prettier-ignore
-// references:
-// https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
-// and
-// https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-export function cover_special_vk_cases(original_vk: number, keycode: string): number {
-  switch (keycode) {
-    case "ShiftLeft": return 0xA0;
-    case "ShiftRight": return 0xA1;
+export function cover_special_vk_cases(original_vk: number, code: string): number {
+  switch (code) {
+    case "MetaLeft": return 0x5B;
+    case "MetaRight": return 0x5C;
+    
     case "ControlLeft": return 0xA2;
     case "ControlRight": return 0xA3;
+
     case "AltLeft": return 0xA4;
     case "AltRight": return 0xA5;
+
+    case "ShiftLeft": return 0xA0;
+    case "ShiftRight": return 0xA1;
   }
 
   return original_vk;
+}
+
+// new_holding_keys is copied by reference,
+// it would be "purer" to copy the array and return new one, but since this function will run a lot,
+// I've decided to push into it for performance reasons.
+export function if_keycode_pressed(
+  all_pressed_keys: any[],
+  keyname: string,
+  left: number,
+  right: number,
+  new_holding_keys: number[]
+) {
+  if (all_pressed_keys[keyname + "Right"]) {
+    new_holding_keys.push(right);
+  } else if (all_pressed_keys[keyname + "Left"]) {
+    new_holding_keys.push(left);
+  }
 }

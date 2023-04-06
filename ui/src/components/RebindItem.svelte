@@ -14,7 +14,7 @@
   {#if !is_shortcut}
     <Key is_new={false} bind:current_key={remap.from} />
   {:else}
-    <KeyCombination is_new={false} bind:current_key={remap.from_shortcut_execution_key} />
+    <KeyCombination is_new={false} bind:holding_keys={remap.from_shortcut_holding_keys} bind:execution_key={remap.from_shortcut_execution_key} />
   {/if}
 
   <span class="from-to-label">to</span>
@@ -22,7 +22,7 @@
   {#if !is_shortcut}
     <Key is_new={true} bind:current_key={remap.to} />
   {:else}
-    <KeyCombination is_new={true} bind:current_key={remap.to_shortcut_execution_key} />
+    <KeyCombination is_new={true} bind:holding_keys={remap.to_shortcut_holding_keys} bind:execution_key={remap.to_shortcut_execution_key} />
   {/if}
 
   <div class="remove-container">

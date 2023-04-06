@@ -178,6 +178,12 @@ input[type="checkbox"]:hover {
   margin: 0 7.5%;
 }
 
+@media (min-width: 900px) {
+  .container {
+    margin: 0 5%;
+  }
+}
+
 .header-row {
   display: flex;
   flex-direction: column;

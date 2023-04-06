@@ -21,9 +21,9 @@
       bindings = [
         ...bindings, 
         {
-          from_shortcut_holding_keys: [1,2,3],
+          from_shortcut_holding_keys: [0xa1, 0xa2],
           from_shortcut_execution_key: 0x41,
-          to_shortcut_holding_keys: [3,2,1],
+          to_shortcut_holding_keys: [0xa1, 0xa2],
           to_shortcut_execution_key: 0x43,
         }
       ] as ShortcutRemap[];
@@ -31,9 +31,8 @@
   }
   
   function on_remove_item(index: number) {
-    let new_bindings = bindings;
-    new_bindings.splice(index, 1)
-    bindings = new_bindings;
+    bindings.splice(index, 1)
+    bindings = bindings;
   }
   
 </script>
