@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { invoke } from "@tauri-apps/api/tauri";
-    import { cover_special_vk_cases, vk_to_string } from "../utils";
+    import { cover_special_vk_cases, prevent_event_bubbling, vk_to_string } from "../utils";
     import "./Key.css";
 
     export let is_new: boolean;
@@ -14,8 +13,7 @@
         e.code
       );
 
-      e.cancelBubble = true;
-      e.preventDefault();
+      return prevent_event_bubbling(e);
     }
     
     let is_key_changing = false;
@@ -33,9 +31,9 @@
   <div class={`key ${is_new ? "new" : ""}`}> {current_key_char} </div>
   <button class="img-btn-wrapper" on:click={change_key_state}>
     {#if !is_key_changing}
-    <img class="edit-icon" src="/edit-pen.svg" alt="edit button"  />
+      <img class="edit-icon" src="/edit-pen.svg" alt="edit button"  />
     {:else}
-    <img class="edit-icon" src="/check-lg.svg" alt="edit button"  />
+      <img class="edit-icon" src="/check-lg.svg" alt="edit button"  />
     {/if}
   </button>
 </div>

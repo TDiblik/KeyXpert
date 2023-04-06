@@ -148,3 +148,9 @@ export function if_keycode_pressed(
     new_holding_keys.push(left);
   }
 }
+
+export function prevent_event_bubbling(e: KeyboardEvent): boolean {
+  e.cancelBubble = true;
+  e.preventDefault();
+  return false;
+}

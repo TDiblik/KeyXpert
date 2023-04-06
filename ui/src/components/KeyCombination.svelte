@@ -1,15 +1,13 @@
 <script lang="ts">
-    import { vk_to_string, cover_special_vk_cases, if_keycode_pressed } from "../utils";
     import "./Key.css";
+    import { vk_to_string, cover_special_vk_cases, if_keycode_pressed, prevent_event_bubbling } from "../utils";
 
     export let is_new: boolean;
     export let holding_keys: number[];
     export let execution_key: number;
     
     $: execution_key_char = vk_to_string(execution_key);
-    $: holding_keys_to_chars = holding_keys.map(s => vk_to_string(s));
-    // $: console.log(holding_keys);
-    // $: console.log(holding_keys_to_chars);
+    $: holding_keys_to_chars = holding_keys.map(s => s != 0 ? vk_to_string(s) : "");
 
     let is_key_changing = false;
 
@@ -38,10 +36,14 @@
       } else {
         execution_key = 0x0;
       }
+
+      return prevent_event_bubbling(e);
     }
     
     function capture_up(e: KeyboardEvent) {
       all_currently_pressed_keys[e.code] = false;
+
+      return prevent_event_bubbling(e);
     }
     
     function change_key_state() {
@@ -58,14 +60,16 @@
 
 <div class="keys-container">
   {#each holding_keys_to_chars as holding_key}
-    <div class={`key ${is_new ? "new" : ""}`}> {holding_key} </div>
+    {#if holding_key != ""}
+      <div class={`key ${is_new ? "new" : ""}`}> {holding_key} </div>
+    {/if}
   {/each}
   <div class={`key ${is_new ? "new" : ""}`}> {execution_key_char} </div>
   <button class="img-btn-wrapper" on:click={change_key_state}>
     {#if !is_key_changing}
-    <img class="edit-icon" src="/edit-pen.svg" alt="edit button"  />
+      <img class="edit-icon" src="/edit-pen.svg" alt="edit button"  />
     {:else}
-    <img class="edit-icon" src="/check-lg.svg" alt="edit button"  />
+      <img class="edit-icon" src="/check-lg.svg" alt="edit button"  />
     {/if}
   </button>
 </div>
