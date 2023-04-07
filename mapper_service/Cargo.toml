@@ -8,6 +8,8 @@ license-file = "../LICENSE"
 
 [profile.release]
 opt-level = 3
+strip = "symbols"
+lto = true
 
 [dependencies]
 anyhow = "1.0.69"

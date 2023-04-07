@@ -8,6 +8,8 @@ license = "../../LICENSE"
 
 [profile.release]
 opt-level = 3
+strip = "symbols"
+lto = true
 
 [build-dependencies]
 tauri-build = { version = "1.2", features = [] }
