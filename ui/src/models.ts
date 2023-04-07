@@ -25,3 +25,9 @@ export interface ShortcutRemap {
   to_shortcut_holding_keys: number[];
   to_shortcut_execution_key: number;
 }
+
+export interface CommandResult<T> {
+  is_success: boolean;
+  message: string;
+  result: null | T;
+}

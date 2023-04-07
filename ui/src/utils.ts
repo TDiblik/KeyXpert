@@ -1,3 +1,6 @@
+import { message } from "@tauri-apps/api/dialog";
+import type { CommandResult } from "./models";
+
 // References for hard coded values:
 // https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 // https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
@@ -159,4 +162,20 @@ export function add_padding_to_keycode_array(new_holding_keys: number[]) {
   while (new_holding_keys.length < 4) {
     new_holding_keys.push(0);
   }
+}
+
+export function handle_tauri_result<T>(
+  result: CommandResult<T>,
+  success_callback: (result: T) => void = (_r: T) => {}
+): boolean {
+  if (!result.is_success) {
+    message(result.message, {
+      title: "Error occured :(",
+      type: "error",
+    });
+    return false;
+  }
+
+  success_callback(result.result);
+  return true;
 }

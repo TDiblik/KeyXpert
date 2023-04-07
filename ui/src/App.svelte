@@ -2,13 +2,15 @@
   import { invoke } from "@tauri-apps/api/tauri"
   import { onMount } from "svelte";
   import type { ProfileDetailsInfo, ServiceConfig } from "./models";
-  import { add_padding_to_keycode_array } from "./utils";
+  import { add_padding_to_keycode_array, handle_tauri_result } from "./utils";
   import ProfileDetails from './components/ProfileDetails.svelte';
   
   let initial_load = true;
   let service_config: ServiceConfig | undefined = undefined;
   async function update_service_config() {
-    service_config = await invoke("get_service_config", {});
+    handle_tauri_result<ServiceConfig>(await invoke("get_service_config", {}), (result) => {
+      service_config = result;
+    });
   }
 
   let selected_profile_id: string | undefined = undefined;
@@ -19,12 +21,14 @@
   });
 
   async function create_profile() {
-    selected_profile_id = await invoke("create_profile", {});
+    handle_tauri_result<string>(await invoke("create_profile", {}), (result) => {
+      selected_profile_id = result;
+    });
     await update_service_config();
   }
   
   async function delete_profile() {
-    await invoke("delete_profile", { idToDelete: selected_profile_id });
+    handle_tauri_result<void>(await invoke("delete_profile", { idToDelete: selected_profile_id }));
     await update_service_config();
     selected_profile_id = undefined;
   }
@@ -36,7 +40,7 @@
       add_padding_to_keycode_array(shortcut_remap.to_shortcut_holding_keys);
     }
 
-    await invoke("save_profile", { profile: profile });
+    handle_tauri_result<void>(await invoke("save_profile", { profile: profile }));
     await update_service_config();
   }
 </script>

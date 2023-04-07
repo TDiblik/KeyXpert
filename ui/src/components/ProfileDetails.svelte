@@ -9,9 +9,9 @@
   let _profile_info: ProfileDetailsInfo = {
     ...selected_profile,
     use_this_profile: selected_profile.id === active_profile
-  };;
+  };
   
-  $: console.log(_profile_info)
+  // $: console.log(_profile_info)
 </script>
 
 <div class="profile-info-row">

@@ -4,12 +4,18 @@ use mapper_service::{
 };
 use uuid::Uuid;
 
-use crate::{models::ProfileSaveObj, utils};
+use crate::{
+    models::{CommandResult, ProfileSaveObj},
+    utils,
+};
 
 #[tauri::command]
-pub fn get_service_config() -> ServiceConfig {
-    utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path())
-        .expect("Unable to get service config file")
+pub fn get_service_config() -> CommandResult<ServiceConfig> {
+    let Ok(config) = utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path()) else {
+        return CommandResult::new_err("Unable to get service config file");
+    };
+
+    CommandResult::new_success_with_value(Some(config), None)
 }
 
 // #[tauri::command]
@@ -19,25 +25,27 @@ pub fn get_service_config() -> ServiceConfig {
 // }
 
 #[tauri::command]
-pub fn create_profile() -> Uuid {
-    let mut config =
-        utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path())
-            .expect("Unable to get service config file");
+pub fn create_profile() -> CommandResult<Uuid> {
+    let Ok(mut config) = utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path()) else {
+        return CommandResult::new_err("Unable to read or parse service config file.");
+    };
 
     let new_profile = Profile::default();
     let new_uuid = new_profile.id;
     config.profiles.push(new_profile);
-    utils::save_config(&shared_constants::service_config_file_path(), &config)
-        .expect("Unable to add profile to service config file");
 
-    new_uuid
+    if utils::save_config(&shared_constants::service_config_file_path(), &config).is_err() {
+        return CommandResult::new_err("Unable to add profile to service config file");
+    }
+
+    CommandResult::new_success_with_value(Some(new_uuid), None)
 }
 
 #[tauri::command]
-pub fn delete_profile(id_to_delete: Uuid) {
-    let mut config =
-        utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path())
-            .expect("Unable to get service config file");
+pub fn delete_profile(id_to_delete: Uuid) -> CommandResult<()> {
+    let Ok(mut config) = utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path()) else {
+        return CommandResult::new_err("Unable to read or parse service config file.");
+    };
 
     if let Some(position_to_delete) = config.profiles.iter().position(|s| s.id == id_to_delete) {
         let deleted_profile = config.profiles.remove(position_to_delete);
@@ -48,17 +56,24 @@ pub fn delete_profile(id_to_delete: Uuid) {
                 config.active_profile = None;
             }
         }
+    } else {
+        return CommandResult::new_err(
+            "Unable to determine position where in config to delete based on id.",
+        );
     }
 
-    utils::save_config(&shared_constants::service_config_file_path(), &config)
-        .expect("Unable to remove profile from service config file");
+    if utils::save_config(&shared_constants::service_config_file_path(), &config).is_err() {
+        return CommandResult::new_err("Unable to remove profile from service config file.");
+    }
+
+    CommandResult::new_success(None)
 }
 
 #[tauri::command]
-pub fn save_profile(profile: ProfileSaveObj) {
-    let mut config =
-        utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path())
-            .expect("Unable to get service config file");
+pub fn save_profile(profile: ProfileSaveObj) -> CommandResult<()> {
+    let Ok(mut config) = utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path()) else {
+        return CommandResult::new_err("Unable to read or parse service config file.");
+    };
 
     if profile.use_this_profile {
         config.active_profile = Some(profile.id);
@@ -68,6 +83,9 @@ pub fn save_profile(profile: ProfileSaveObj) {
         *profile_to_change = profile.into();
     }
 
-    utils::save_config(&shared_constants::service_config_file_path(), &config)
-        .expect("Unable to save new service config file");
+    if utils::save_config(&shared_constants::service_config_file_path(), &config).is_err() {
+        return CommandResult::new_err("Unable to save new service config file");
+    }
+
+    CommandResult::new_success(None)
 }
