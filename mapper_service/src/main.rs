@@ -98,10 +98,6 @@ fn setup() -> anyhow::Result<()> {
         }
     }
 
-    unsafe {
-        ENABLE_RECURSIVE_REMAPPING = false;
-    }
-
     Ok(())
 }
 
