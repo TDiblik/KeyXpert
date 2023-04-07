@@ -48,7 +48,7 @@
         "resizable": true,
         "maximized": false,
         "focus": true,
-        "alwaysOnTop": true,
+        "alwaysOnTop": false,
         "decorations": true,
 
         "width": 750,
