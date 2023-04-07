@@ -21,8 +21,8 @@ impl Default for Profile {
         Self {
             id: new_uuid,
             name: format!("profile - {}", new_uuid),
-            key_remaps: vec![],
-            shortcut_remaps: vec![],
+            key_remaps: vec![KeyRemap::default()],
+            shortcut_remaps: vec![ShortcutRemap::default()],
         }
     }
 }
@@ -33,10 +33,30 @@ pub struct KeyRemap {
     pub to: u8,
 }
 
+impl Default for KeyRemap {
+    fn default() -> Self {
+        Self {
+            from: 0x41,
+            to: 0x42,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ShortcutRemap {
     pub from_shortcut_holding_keys: [u8; 4],
     pub from_shortcut_execution_key: u8,
     pub to_shortcut_holding_keys: [u8; 4],
     pub to_shortcut_execution_key: u8,
+}
+
+impl Default for ShortcutRemap {
+    fn default() -> Self {
+        Self {
+            from_shortcut_holding_keys: [0xA2, 0, 0, 0],
+            from_shortcut_execution_key: 0x41,
+            to_shortcut_holding_keys: [0xA2, 0, 0, 0],
+            to_shortcut_execution_key: 0x42,
+        }
+    }
 }

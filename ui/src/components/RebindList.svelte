@@ -19,10 +19,10 @@
       bindings = [
         ...bindings, 
         {
-          from_shortcut_holding_keys: [0xa1, 0xa2],
+          from_shortcut_holding_keys: [0xa2],
           from_shortcut_execution_key: 0x41,
-          to_shortcut_holding_keys: [0xa1, 0xa2],
-          to_shortcut_execution_key: 0x43,
+          to_shortcut_holding_keys: [0xa2],
+          to_shortcut_execution_key: 0x42,
         }
       ] as ShortcutRemap[];
     }
