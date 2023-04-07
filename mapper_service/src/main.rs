@@ -173,8 +173,8 @@ unsafe extern "system" fn remap_keys_callback(
         }) {
             STOP_RECURSIVE_SHORTCUT = true;
 
-            let mut keys_to_leave_pressed = shortcut_info.get_from_shortcut();
-            for possible_key in keys_to_leave_pressed.iter().rev() {
+            let keys_to_release = shortcut_info.get_from_shortcut();
+            for possible_key in keys_to_release.iter().rev() {
                 let Some(key) = *possible_key else {
                     continue;
                 };
@@ -193,14 +193,6 @@ unsafe extern "system" fn remap_keys_callback(
                     continue;
                 };
                 keybd_trigger_key_up!(key, map_virtual_key!(key));
-            }
-
-            keys_to_leave_pressed[4] = None;
-            for possible_key in keys_to_leave_pressed {
-                let Some(key) = possible_key else {
-                    continue;
-                };
-                keybd_trigger_key_down!(key, map_virtual_key!(key));
             }
 
             STOP_RECURSIVE_SHORTCUT = false;
