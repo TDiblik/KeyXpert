@@ -4,6 +4,9 @@
   import type { ProfileDetailsInfo, ServiceConfig } from "./models";
   import { add_padding_to_keycode_array, handle_tauri_result } from "./utils";
   import ProfileDetails from './components/ProfileDetails.svelte';
+  import Modal from "./components/Modal/Modal.svelte";
+  import type { ModalProps } from "./components/Modal/ModalStore";
+  import { modal_info } from "./components/Modal/ModalStore";
   
   let initial_load = true;
   let service_config: ServiceConfig | undefined = undefined;
@@ -40,9 +43,16 @@
       add_padding_to_keycode_array(shortcut_remap.to_shortcut_holding_keys);
     }
 
-    handle_tauri_result<void>(await invoke("save_profile", { profile: profile }));
+    if (handle_tauri_result<void>(await invoke("save_profile", { profile: profile }))) {
+      modal_info.set({
+        title: "Successfully saved profile",
+        description: "Your profile changes should be have been successfully written into config file.",
+        type: "info"
+      } as ModalProps);
+    }
     await update_service_config();
   }
+
 </script>
 
 {#if initial_load}
@@ -84,4 +94,6 @@
     {/if}
   {/key}
 </main>
+
+<Modal />
 {/if}

@@ -81,6 +81,10 @@ pub fn save_profile(profile: ProfileSaveObj) -> CommandResult<()> {
 
     if let Some(profile_to_change) = config.profiles.iter_mut().find(|s| s.id == profile.id) {
         *profile_to_change = profile.into();
+    } else {
+        return CommandResult::new_err(
+            "Unable to find profile in saved profiles -- unable to save.",
+        );
     }
 
     if utils::save_config(&shared_constants::service_config_file_path(), &config).is_err() {

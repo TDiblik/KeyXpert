@@ -1,5 +1,5 @@
-import { message } from "@tauri-apps/api/dialog";
 import type { CommandResult } from "./models";
+import { modal_info, type ModalProps } from "./components/Modal/ModalStore";
 
 // References for hard coded values:
 // https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
@@ -169,10 +169,11 @@ export function handle_tauri_result<T>(
   success_callback: (result: T) => void = (_r: T) => {}
 ): boolean {
   if (!result.is_success) {
-    message(result.message, {
+    modal_info.set({
       title: "Error occured :(",
       type: "error",
-    });
+      description: result.message,
+    } as ModalProps);
     return false;
   }
 
