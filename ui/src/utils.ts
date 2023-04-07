@@ -17,12 +17,7 @@ export function vk_to_string(vk: number): String {
     return `F${vk - 0x6f}`;
   }
 
-  // TODO: Check against https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes 
-  // ChatGPT wrote this, because I cannot be asked copy-pasting it from microsoft docs.
-  // I've gone through some cases I caught during development (unsuprisingly a lot), but
-  // it may contain many more bugs since it's AI generated, but it's OK for now...
-  //
-  // TODO2: It would be cool to add images instead of text for some keys (minus, percentage, *, /, enter, etc...)
+  // TODO: It would be cool to add images instead of text for some keys (minus, percentage, *, /, enter, etc...)
   switch (vk) {
     case 0x08: return "Backspace";
     case 0x09: return "Tab";
