@@ -1,9 +1,7 @@
 TODO:
 
-- Read settings from json
 - Add settings UI
   - base UI
-    - Ability to select whether or not to allow reccursive remapping (for all keys)
     - After remapping, restart mapper_service windows service
   - UI installs latest mapper_service from github
   - UI registers mapper_service as a windows service that starts after startup
