@@ -33,18 +33,17 @@ export function vk_to_string(vk: number): String {
     case 0x12: return "Alt";
     case 0x13: return "Pause";
     case 0x14: return "Caps";
-    case 0x14: return "Caps";
-      case 0x15: return "IME Kana";
-      case 0x16: return "IME On";
-      case 0x17: return "IME Junja";
-      case 0x18: return "IME Final";
-      case 0x19: return "IME Hanja";
-      case 0x1A: return "IME Off";
+    case 0x15: return "IME Kana";
+    case 0x16: return "IME On";
+    case 0x17: return "IME Junja";
+    case 0x18: return "IME Final";
+    case 0x19: return "IME Hanja";
+    case 0x1A: return "IME Off";
     case 0x1B: return "Esc";
-      case 0x1C: return "IME Convert";
-      case 0x1D: return "IME Nonconvert";
-      case 0x1E: return "IME Accept";
-      case 0x1F: return "IME mode change request";
+    case 0x1C: return "IME Convert";
+    case 0x1D: return "IME Nonconvert";
+    case 0x1E: return "IME Accept";
+    case 0x1F: return "IME mode change request";
     case 0x20: return "Space";
     case 0x21: return "PgUp";
     case 0x22: return "PgDn";
@@ -56,11 +55,11 @@ export function vk_to_string(vk: number): String {
     case 0x28: return "Down Arrow";
     case 0x2D: return "Insert";
     case 0x2E: return "Del";
-      case 0x2F: return "Help";
+    case 0x2F: return "Help";
     // Exclude range 0x30 to 0x5A
     case 0x5B: return "Left Win"; //LEFT_SUPER
     case 0x5C: return "Right Win"; //RIGHT_SUPER
-     case 0x5D: return "Apps";
+    case 0x5D: return "Apps";
     case 0x5D: return "Sleep";
     case 0x60: return "Numpad 0";
     case 0x61: return "Numpad 1";
@@ -116,10 +115,10 @@ export function vk_to_string(vk: number): String {
     case 0xDC: return "Backslash";
     case 0xDD: return "Right Bracket";
     case 0xDE: return "Quote";
-      case 0xDF: return "VK_OEM_8";
-      case 0xE2: return "VK_OEM_102";
+    case 0xDF: return "VK_OEM_8";
+    case 0xE2: return "VK_OEM_102";
     case 0xE5: return "IME Process";
-      case 0xE7: return "VK_PACKET";
+    case 0xE7: return "VK_PACKET";
     case 0xF6: return "Attn";
     case 0xF7: return "CrSel";
     case 0xF8: return "ExSel";
