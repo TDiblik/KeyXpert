@@ -9,6 +9,7 @@ TODO:
   - Ability to remove sticky keys option from poping-up every time I press shift more than once in a span of 1 minute :/
   - Remove ability to Maximize window
 - Finish base project windows-only
+- Add release pipeline
 - Add Linux support
 - Add MacOs support (I have very limited access to one mac which I could use for testing from time to time, but PR from Mac users will be more than welcome...)
 - Write tests that make sense.
