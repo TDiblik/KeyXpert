@@ -8,10 +8,14 @@ TODO:
   - Select keyboard layout, install new keyboard layout and delete existing keyboard layouts
   - Ability to remove sticky keys option from poping-up every time I press shift more than once in a span of 1 minute :/
   - Remove ability to Maximize window
+  - Ability to set `ENABLE_RECURSIVE_REMAPPING` and `ENABLE_RECURSIVE_SHORTCUTS` inside UI
 - Finish base project windows-only
 - Add release pipeline
 - Add Linux support
 - Add MacOs support (I have very limited access to one mac which I could use for testing from time to time, but PR from Mac users will be more than welcome...)
+- Create some kind of logo
+- Create nice looking README so the project looks more legit
+- Create website from which users download the software (non-programmers don't use github)
 - Write tests that make sense.
 - Write platform specific tests.
 
