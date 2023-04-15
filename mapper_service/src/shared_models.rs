@@ -7,7 +7,7 @@ pub struct ServiceConfig {
     pub profiles: Vec<Profile>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Profile {
     pub id: Uuid,
     pub name: String,
@@ -27,7 +27,7 @@ impl Default for Profile {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct KeyRemap {
     pub from: u8,
     pub to: u8,
@@ -42,7 +42,7 @@ impl Default for KeyRemap {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ShortcutRemap {
     pub from_shortcut_holding_keys: [u8; 4],
     pub from_shortcut_execution_key: u8,

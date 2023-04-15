@@ -1,10 +1,39 @@
+use anyhow::anyhow;
 use std::{fs::File, io::BufReader, path::Path};
 
-use mapper_service::shared_models::ServiceConfig;
+use mapper_service::{
+    shared_constants,
+    shared_models::{Profile, ServiceConfig},
+};
 
+// --------------------------------------
+// -------- Cross-platform utils --------
+// --------------------------------------
 pub fn get_service_config(config_path_raw: String) -> anyhow::Result<ServiceConfig> {
     let config_buf = BufReader::new(File::open(Path::new(&config_path_raw))?);
     Ok(serde_json::from_reader(config_buf)?)
+}
+
+pub fn get_active_profile() -> anyhow::Result<Profile> {
+    let Ok(service_config) = get_service_config(shared_constants::service_config_file_path()) else {
+        return Err(anyhow!("Unable to get/parse service config file."));
+    };
+    let Some(active_profile_id) = service_config.active_profile else {
+        return Err(anyhow!("No profile active, shutting down."));
+    };
+
+    let Some(active_profile) = service_config.profiles.iter().find(|s| s.id == active_profile_id) else {
+        return Err(
+            anyhow!(
+                format!("Profiles ({}) do not include active profile id ({})", 
+                    service_config.profiles.iter().map(|s| s.id.to_string()).collect::<Vec<String>>().join(", "), 
+                    active_profile_id
+                )
+            )
+        );
+    };
+
+    Ok(active_profile.clone())
 }
 
 #[macro_export]
@@ -15,6 +44,15 @@ macro_rules! log_debug {
     };
 }
 
+#[allow(clippy::missing_safety_doc)]
+pub unsafe fn is_sys_key(key: u8) -> bool {
+    *crate::SYS_KEYS_TABLE.get(key as usize).unwrap_or(&false)
+}
+
+// ------------------------------------
+// -------- Windows-only utils --------
+// ------------------------------------
+#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! call_next_hook {
     ($n_code:expr, $w_param:expr, $l_param:expr) => {
@@ -22,6 +60,7 @@ macro_rules! call_next_hook {
     };
 }
 
+#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! event_handled {
     () => {
@@ -29,6 +68,7 @@ macro_rules! event_handled {
     };
 }
 
+#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! map_virtual_key {
     ($key:expr) => {
@@ -36,6 +76,7 @@ macro_rules! map_virtual_key {
     };
 }
 
+#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! keybd_trigger_key_up {
     ($key:expr, $scan_code:expr) => {
@@ -48,6 +89,7 @@ macro_rules! keybd_trigger_key_up {
     };
 }
 
+#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! keybd_trigger_key_down {
     ($key:expr, $scan_code:expr) => {
@@ -55,7 +97,14 @@ macro_rules! keybd_trigger_key_down {
     };
 }
 
-#[allow(clippy::missing_safety_doc)]
-pub unsafe fn is_sys_key(key: u8) -> bool {
-    *crate::SYS_KEYS_TABLE.get(key as usize).unwrap_or(&false)
-}
+// ------------------------------------
+// --------- Linux-only utils ---------
+// ------------------------------------
+//
+// Help needed
+
+// ------------------------------------
+// --------- MacOs-only utils ---------
+// ------------------------------------
+//
+// Help needed

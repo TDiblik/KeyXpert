@@ -108,7 +108,7 @@ fn main() {
                     #[test]
                     fn is_{}_sys_key() {{
                         unsafe {{
-                            assert!(is_sys_key({}));
+                            assert!(crate::utils::is_sys_key({}));
                         }}
                     }}",
                     s, s
