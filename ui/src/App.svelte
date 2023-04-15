@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri"
-  import { onDestroy, onMount } from "svelte";
+  import { onMount } from "svelte";
   import type { ProfileDetailsInfo, ServiceConfig } from "./models";
   import { add_padding_to_keycode_array, handle_tauri_result } from "./utils";
   import ProfileDetails from './components/ProfileDetails.svelte';
