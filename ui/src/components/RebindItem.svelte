@@ -40,14 +40,11 @@
   border-radius: var(--border-radius);
   padding: 7.5px 0px;
   overflow-x: auto;
+  gap: 20px;
 }
 
 .remove-container {
   margin-left: auto;
   margin-right: 10px;
-}
-
-.from-to-label {
-  margin: 0 20px;
 }
 </style>
