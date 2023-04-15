@@ -1,8 +1,6 @@
 use anyhow::anyhow;
 
 use crate::{
-    call_next_hook, event_handled, keybd_trigger_key_down, keybd_trigger_key_up, log_debug,
-    map_virtual_key,
     models::{LastSentRemapInfo, RemappedShortcut},
     utils::{get_active_profile, is_sys_key},
     ENABLE_RECURSIVE_REMAPPING, ENABLE_RECURSIVE_SHORTCUTS, LAST_SENT_REMAP_INFO, REMAPPED_KEYS,
@@ -10,8 +8,6 @@ use crate::{
 };
 
 pub struct App;
-
-// Define platform specific core app functions
 pub trait AppCore {
     fn setup() -> anyhow::Result<()>;
     unsafe fn program_loop() -> anyhow::Result<()>;
@@ -20,6 +16,12 @@ pub trait AppCore {
 // ------------------------------------
 // ------ Windows implementation ------
 // ------------------------------------
+#[cfg(target_os = "windows")]
+use crate::{
+    call_next_hook, event_handled, keybd_trigger_key_down, keybd_trigger_key_up, log_debug,
+    map_virtual_key,
+};
+
 #[cfg(target_os = "windows")]
 use winapi::{
     shared::minwindef::{LPARAM, LRESULT, WPARAM},
