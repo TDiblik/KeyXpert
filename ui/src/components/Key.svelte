@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onDestroy } from "svelte";
     import { cover_special_vk_cases, prevent_event_bubbling, vk_to_string } from "../utils";
     import "./Key.css";
 
@@ -16,15 +17,21 @@
       return prevent_event_bubbling(e);
     }
     
+    function cleanup_events() {
+      window.removeEventListener("keydown", capture_key, true);
+    }
+    
     let is_key_changing = false;
     function change_key_state() {
       if (!is_key_changing) {
         window.addEventListener("keydown", capture_key, true);
       } else {
-        window.removeEventListener("keydown", capture_key, true);
+        cleanup_events()
       }
       is_key_changing = !is_key_changing;
     }
+
+    onDestroy(() => cleanup_events());
 </script>
 
 <div class="keys-container">

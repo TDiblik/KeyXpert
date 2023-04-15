@@ -1,6 +1,7 @@
 <script lang="ts">
     import "./Key.css";
     import { vk_to_string, cover_special_vk_cases, if_keycode_pressed, prevent_event_bubbling } from "../utils";
+    import { onDestroy } from "svelte";
 
     export let is_new: boolean;
     export let holding_keys: number[];
@@ -46,16 +47,22 @@
       return prevent_event_bubbling(e);
     }
     
+    function cleanup_events() {
+      window.removeEventListener("keydown", capture_down, true);
+      window.removeEventListener("keyup", capture_up, true);
+    }
+    
     function change_key_state() {
         if (!is_key_changing) {
           window.addEventListener("keydown", capture_down, true);
           window.addEventListener("keyup", capture_up, true);
         } else {
-          window.removeEventListener("keydown", capture_down, true);
-          window.removeEventListener("keyup", capture_up, true);
+          cleanup_events();
         }
         is_key_changing = !is_key_changing;
     }
+    
+    onDestroy(() => cleanup_events());
 </script>
 
 <div class="keys-container">
