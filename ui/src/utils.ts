@@ -55,7 +55,7 @@ export function vk_to_string(vk: number): String {
     case 0x5B: return "Left Win"; //LEFT_SUPER
     case 0x5C: return "Right Win"; //RIGHT_SUPER
     case 0x5D: return "Apps";
-    case 0x5D: return "Sleep";
+    case 0x5F: return "Sleep";
     case 0x60: return "Numpad 0";
     case 0x61: return "Numpad 1";
     case 0x62: return "Numpad 2";
