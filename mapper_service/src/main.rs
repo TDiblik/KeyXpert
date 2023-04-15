@@ -192,6 +192,9 @@ unsafe extern "system" fn remap_keys_callback(
                 let Some(key) = *possible_key else {
                     continue;
                 };
+                if key == VK_RMENU as u8 {
+                    continue;
+                }
                 keybd_trigger_key_up!(key, map_virtual_key!(key));
             }
 
