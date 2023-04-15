@@ -75,6 +75,12 @@ pub fn save_profile(profile: ProfileSaveObj) -> CommandResult<()> {
         return CommandResult::new_err("Unable to read or parse service config file.");
     };
 
+    if let Some(active_profile) = config.active_profile {
+        if active_profile == profile.id {
+            config.active_profile = None;
+        }
+    }
+
     if profile.use_this_profile {
         config.active_profile = Some(profile.id);
     }
