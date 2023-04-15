@@ -12,6 +12,7 @@ TODO:
     - After remapping, restart mapper_service windows service
   - UI installs latest mapper_service from github
   - UI registers mapper_service as a windows service that starts after startup
+  - UI should remember it's state after restart (size,position,miximized/not-maximized)
   - Select keyboard layout, install new keyboard layout and delete existing keyboard layouts
   - Ability to remove sticky keys option from poping-up every time I press shift more than once in a span of 1 minute :/
   - Remove ability to Maximize window
