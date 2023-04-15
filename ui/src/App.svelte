@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri"
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import type { ProfileDetailsInfo, ServiceConfig } from "./models";
   import { add_padding_to_keycode_array, handle_tauri_result } from "./utils";
   import ProfileDetails from './components/ProfileDetails.svelte';
@@ -22,7 +22,7 @@
     selected_profile_id = service_config.active_profile;
     initial_load = false;
   });
-
+  
   async function create_profile() {
     handle_tauri_result<string>(await invoke("create_profile", {}), (result) => {
       selected_profile_id = result;
@@ -52,7 +52,6 @@
     }
     await update_service_config();
   }
-
 </script>
 
 {#if initial_load}
@@ -82,7 +81,7 @@
   </div>
   
   {#key selected_profile_id}
-    {#if selected_profile_id != undefined && selected_profile_id.length > 0}
+    {#if selected_profile_id?.length > 0}
         {@const selected_profile = service_config?.profiles.find(s => s.id === selected_profile_id)}
         {#if selected_profile != null}
           <ProfileDetails 
@@ -93,6 +92,12 @@
       {/if}
     {/if}
   {/key}
+  
+  <div class="info-box">
+  {#if service_config.active_profile == undefined || service_config.active_profile.length < 1}
+    <p class="warning">No active profile (unable to start remapping)</p>
+  {/if}
+  </div>
 </main>
 
 <Modal />

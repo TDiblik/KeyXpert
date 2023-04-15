@@ -324,3 +324,16 @@ input[type="checkbox"]:hover {
 .profile-actions * {
   margin-right: 10px;
 }
+
+.info-box {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.info-box .warning {
+  color: #ffc107 !important;
+}
+
+.info-box .error {
+  color: #dc3545 !important;
+}
