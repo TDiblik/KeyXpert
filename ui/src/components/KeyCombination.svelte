@@ -21,6 +21,12 @@
         if_keycode_pressed(all_currently_pressed_keys, "Meta", 0x5B, 0xBC, new_holding_keys);
         if_keycode_pressed(all_currently_pressed_keys, "Control", 0xA2, 0xA3, new_holding_keys);
         if_keycode_pressed(all_currently_pressed_keys, "Alt", 0xA4, 0xA5, new_holding_keys);
+        // Check for ALTGr
+        if (new_holding_keys.length >= 2 && new_holding_keys[new_holding_keys.length-2] == 0xA2 && new_holding_keys[new_holding_keys.length-1] == 0xA5) {
+          new_holding_keys.pop();
+          new_holding_keys.pop();
+          new_holding_keys.push(0xA5)
+        }
         if_keycode_pressed(all_currently_pressed_keys, "Shift", 0xA0, 0xA1, new_holding_keys);
         holding_keys = new_holding_keys;
       }
