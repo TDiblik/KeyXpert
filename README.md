@@ -1,3 +1,10 @@
+## <p style="text-align: center;">This is WIP, please don't create issues about bugs, I have my own list of feature/bug fixes atm.</p>
+
+## <p style="text-align: center;">DOGFOODING atm to find all bugs</p>
+
+<br/>
+<br/>
+
 TODO:
 
 - Add settings UI
