@@ -55,6 +55,7 @@
         "height": 650,
 
         "maxWidth": 1350,
+        "maxHeight": 9999,
 
         "minWidth": 750,
         "minHeight": 650
