@@ -2,6 +2,15 @@
 
 echo='echo -e \n '
 
+echo "---- Make sure that you're running this script from the project root ----"
+
+$echo "---- Performing version bump ----"
+read -p "From version: " old_version
+read -p "To version: " new_version
+sed -i "0,/version = \"$old_version\"/{s/$old_version/$new_version/}" ./mapper_service/Cargo.toml
+sed -i "0,/version = \"$old_version\"/{s/$old_version/$new_version/}" ./ui/src-tauri/Cargo.toml
+sed -i "0,/\"version\": \"$old_version\"/{s/$old_version/$new_version/}" ./ui/src-tauri/tauri.conf.json
+
 $echo "---- Cleaning previous build ----"
 rm -rf release_build
 mkdir release_build
