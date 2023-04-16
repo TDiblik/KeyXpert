@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/tauri"
+  import { invoke } from "@tauri-apps/api/tauri";
+  import { getVersion } from "@tauri-apps/api/app";
+  import { arch } from "@tauri-apps/api/os";
   import { onMount } from "svelte";
   import type { ProfileDetailsInfo, ServiceConfig } from "./models";
   import { add_padding_to_keycode_array, handle_tauri_result } from "./utils";
@@ -23,6 +25,83 @@
     initial_load = false;
   });
   
+  // https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#get-the-latest-release
+  async function check_for_updates() {
+    const req = await fetch("https://api.github.com/repos/TDiblik/KeyXpert/releases/latest"); // Gets latest release metadata (reference above)
+    if (!req.ok) {
+      const err_status = req.status;
+      let err_text = "";
+      try { err_text = JSON.stringify(await req.json()); } catch{}
+
+      modal_info.set({
+        type: "error",
+        title: "Error occured :(",
+        description: "Unable to get data about latest release. This error could either mean that Github is down, OR (the more realistic reason), I fucked up releases, so you should probably go onto my github and open issue/check for manual updates.",
+        show_error_info: true,
+        error: {
+          url: req.url,
+          status: err_status,
+          status_err_text: err_text,
+        },
+      } as ModalProps);
+      return;
+    }
+  
+    const content = await req.json()
+    let latest_release_version: string = content.tag_name; // Ensured by respose schema (reference above)
+    if (latest_release_version.charAt(0) == 'v') {
+      latest_release_version = latest_release_version.substring(1);
+    }
+
+    const app_version = await getVersion();
+    if (app_version == latest_release_version) {
+      modal_info.set({
+        type: "info",
+        title: "Everything up-to-date",
+        description: `Latest released version is ${latest_release_version} and your current version is ${app_version}.`,
+      } as ModalProps);
+      return;
+    }
+    
+    let system_archtecture: string = await arch();
+    if (system_archtecture == "x86_64") {
+      system_archtecture = "x64";
+    }
+    const expected_installer_name = `KeyXpert_${latest_release_version}_${system_archtecture}_en-US.msi`; // TODO: Match extension against platform
+    const download_url = content.assets.find(s => s.name == expected_installer_name).browser_download_url // Ensured by respose schema (reference above)
+    if (download_url == null) {
+      modal_info.set({
+        type: "error",
+        title: "Unable to find installer for your architecture",
+        description: `New version is available (${latest_release_version}), but UI was unable to find installer for your system architecture (${system_archtecture}). Please check whether installer for your system architecture is available, and if so, proceed to install manually (https://github.com/TDiblik/KeyXpert/releases/latest/).`,
+      } as ModalProps);
+      return;
+    }
+
+    modal_info.set({
+      type: "question",
+      title: "Update available",
+      description: `You are currently using version ${app_version}, however newer version ${latest_release_version} is available. Would you like to update?`,
+      keep_open_after_yes: true,
+      yes_callback: async () => {
+        modal_info.set({
+          type: "fixed-info",
+          title: "Installing new update...",
+          description: "It's gonna take some time, please be patient...",
+        } as ModalProps);
+
+        const could_update = await invoke("download_and_install_update", { urlPath: download_url, expectedInstallerName: expected_installer_name });
+        if (!could_update) {
+          modal_info.set({
+            type: "error",
+            title: "Unable to install new version",
+            description: "Something happened while installing new version. Please update manually or try again later.",
+          } as ModalProps);
+        }
+      }
+    } as ModalProps);
+  }
+  
   async function create_profile() {
     handle_tauri_result<string>(await invoke("create_profile", {}), (result) => {
       selected_profile_id = result;
@@ -45,9 +124,9 @@
 
     if (handle_tauri_result<void>(await invoke("save_profile", { profile: profile }))) {
       modal_info.set({
+        type: "info",
         title: "Successfully saved profile",
         description: "Your profile changes should be have been successfully written into config file.",
-        type: "info"
       } as ModalProps);
     }
     await update_service_config();
@@ -60,6 +139,9 @@
 <main class="container">
   <div class="header-row">
     <h1 class="header">KeyXpert</h1>
+    <div class="check-for-updates-button-wrapper">
+      <button class="btn primary" on:click={check_for_updates}>Check for updates</button>
+    </div>
     <div class="advanced-settings-button-wrapper">
       <button class="btn primary">Advanced settings</button>
     </div>

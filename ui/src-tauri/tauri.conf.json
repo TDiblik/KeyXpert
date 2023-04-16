@@ -17,8 +17,13 @@
         "all": false,
         "open": true
       },
-      "dialog": {
-        "message": true
+      "app": {
+        "all": true,
+        "hide": false,
+        "show": false
+      },
+      "os": {
+        "all": true
       }
     },
     "bundle": {

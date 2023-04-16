@@ -1,3 +1,5 @@
+use std::{fs, io};
+
 use mapper_service::{
     shared_constants,
     shared_models::{Profile, ServiceConfig},
@@ -8,6 +10,47 @@ use crate::{
     models::{CommandResult, ProfileSaveObj},
     utils,
 };
+
+#[tauri::command]
+pub fn download_and_install_update(url_path: String, expected_installer_name: String) -> bool {
+    let Some(mut new_installer_path) = tauri::api::path::download_dir() else {
+        return false
+    };
+    new_installer_path.push(expected_installer_name);
+
+    let Ok(response) = reqwest::blocking::get(url_path) else {
+        return false
+    };
+    let Ok(response_bytes) = response.bytes() else {
+        return false
+    };
+    let mut contents = io::Cursor::new(response_bytes);
+
+    let Ok(mut new_installer) = fs::File::create(new_installer_path.clone()) else {
+        return false;
+    };
+
+    if io::copy(&mut contents, &mut new_installer).is_err() {
+        return false;
+    }
+    if new_installer.sync_all().is_err() {
+        return false;
+    }
+    drop(new_installer);
+
+    // TODO: If windows
+    let path_raw = new_installer_path.display().to_string();
+    println!("{}", path_raw);
+    if std::process::Command::new("cmd")
+        .args(["/C", "start", "/B", path_raw.as_str()])
+        .spawn()
+        .is_err()
+    {
+        return false;
+    }
+
+    std::process::exit(0); // TODO: It would be better to use https://docs.rs/tauri/1.2.4/tauri/struct.AppHandle.html#method.exit but I was unable to get it working
+}
 
 #[tauri::command]
 pub fn get_service_config() -> CommandResult<ServiceConfig> {

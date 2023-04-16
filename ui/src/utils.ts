@@ -181,8 +181,8 @@ export function handle_tauri_result<T>(
 ): boolean {
   if (!result.is_success) {
     modal_info.set({
-      title: "Error occured :(",
       type: "error",
+      title: "Error occured :(",
       description: result.message,
     } as ModalProps);
     return false;
