@@ -146,6 +146,15 @@ body {
   cursor: default;
 }
 
+.link {
+  color: #67d6ed;
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .btn {
   border-radius: var(--border-radius);
   box-shadow: none;

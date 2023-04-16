@@ -1,6 +1,7 @@
 # --------------- START Custom --------------- #
 
 release_build/
+ui/src-tauri/LICENSE
 
 # ---------------- END Custom ---------------- #
 
