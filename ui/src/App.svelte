@@ -58,7 +58,7 @@
       modal_info.set({
         type: "info",
         title: "Everything up-to-date",
-        description: `Your version matches the latest released version (your: ${app_version} ; latest: ${latest_release_version}).`,
+        description: `Your version matches the latest released version (installed: ${app_version} ; latest: ${latest_release_version}).`,
       } as ModalProps);
       return;
     }
