@@ -14,6 +14,9 @@
         e.code
       );
 
+      // TODO: Add UI config setting into Advanced settings that disables the following call (you may want to rebind multiple keys at once)
+      change_key_state();
+
       return prevent_event_bubbling(e);
     }
     
