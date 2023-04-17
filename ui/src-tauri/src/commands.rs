@@ -39,10 +39,13 @@ pub fn download_and_install_update(url_path: String, expected_installer_name: St
     drop(new_installer);
 
     // TODO: If windows
-    let path_raw = new_installer_path.display().to_string();
-    println!("{}", path_raw);
     if std::process::Command::new("cmd")
-        .args(["/C", "start", "/B", path_raw.as_str()])
+        .args([
+            "/C",
+            "start",
+            "/B",
+            new_installer_path.display().to_string().as_str(),
+        ])
         .spawn()
         .is_err()
     {
@@ -59,6 +62,99 @@ pub fn get_service_config() -> CommandResult<ServiceConfig> {
     };
 
     CommandResult::new_success_with_value(Some(config), None)
+}
+
+#[cfg(target_os = "windows")]
+#[tauri::command]
+pub fn initial_check() -> CommandResult<String> {
+    use std::path::Path;
+
+    let mapper_path = shared_constants::get_mapper_path();
+
+    let new_link_path = Path::new(&shared_constants::parsed_home_path())
+        .join("AppData")
+        .join("Roaming")
+        .join("Microsoft")
+        .join("Windows")
+        .join("Start Menu")
+        .join("Programs")
+        .join("Startup")
+        .join("start_mapper_service.lnk");
+
+    if !new_link_path.exists() {
+        let Ok(sl) = mslnk::ShellLink::new(mapper_path.display().to_string()) else {
+            return CommandResult::new_err("Unable to create shell link to mapper");
+        };
+        if sl.create_lnk(new_link_path).is_err() {
+            return CommandResult::new_err("Unable to create shell link to mapper");
+        }
+    }
+
+    CommandResult::new_success(None)
+}
+
+#[cfg(target_os = "windows")]
+#[tauri::command]
+pub fn current_mapper_state() -> bool {
+    use std::process::{Command, Stdio};
+
+    // cmd /C tasklist | find /I "mapper_service.exe" > nul && echo true || echo false
+    let Ok(output) = Command::new("cmd")
+        .args([
+            "/C",
+            "tasklist",
+            "/fi",
+            "ImageName eq mapper_service.exe",
+            "/fo",
+            "LIST",
+        ])
+        .stdout(Stdio::piped())
+        .output() else {
+            return false
+        };
+
+    if !output.status.success() {
+        return false;
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let Some(first_line) = stdout.trim_start().split('\n').next() else {
+        return false;
+    };
+
+    first_line.contains("Image Name:")
+        && first_line.contains(shared_constants::MAPPER_EXECUTABLE_NAME)
+}
+
+#[cfg(target_os = "windows")]
+#[tauri::command]
+pub fn change_mapper_state(new_state: bool) {
+    use std::process::Command;
+
+    let mapper_path = shared_constants::get_mapper_path();
+
+    let mut command = Command::new("cmd");
+    match new_state {
+        true => command.args([
+            "/C",
+            "start",
+            "/B",
+            mapper_path.display().to_string().as_str(),
+        ]),
+        false => command.args([
+            "/C",
+            "taskkill",
+            "/IM",
+            shared_constants::MAPPER_EXECUTABLE_NAME,
+            "/F",
+        ]),
+    };
+
+    let Ok(mut child) = command.spawn() else {
+        return;
+    };
+
+    let _ = child.wait();
 }
 
 // #[tauri::command]

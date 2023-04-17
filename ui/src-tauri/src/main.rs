@@ -8,6 +8,9 @@ mod utils;
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            commands::initial_check,
+            commands::current_mapper_state,
+            commands::change_mapper_state,
             commands::download_and_install_update,
             commands::get_service_config,
             commands::create_profile,

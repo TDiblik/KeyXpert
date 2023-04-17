@@ -1,14 +1,34 @@
-use std::time::SystemTime;
+use std::{path::PathBuf, time::SystemTime};
 
 use chrono::{DateTime, Utc};
 
-pub fn config_dir_path() -> String {
+#[cfg(target_os = "windows")]
+pub const MAPPER_EXECUTABLE_NAME: &str = "mapper_service.exe";
+#[cfg(target_family = "unix")]
+pub const MAPPER_EXECUTABLE_NAME: &str = "mapper_service";
+
+/// Following format (ends with separator): C:\\Users\UserName\
+pub fn parsed_home_path() -> String {
     format!(
-        "{}{}.config{}KeyXpert{}",
+        "{}{}",
         home::home_dir()
             .expect("Home library unable to get home directory.")
             .display(),
-        std::path::MAIN_SEPARATOR,
+        std::path::MAIN_SEPARATOR
+    )
+}
+
+pub fn get_mapper_path() -> PathBuf {
+    let mut mapper_path = std::env::current_exe().unwrap();
+    mapper_path.pop();
+    mapper_path.push(MAPPER_EXECUTABLE_NAME);
+    return mapper_path;
+}
+
+pub fn config_dir_path() -> String {
+    format!(
+        "{}.config{}KeyXpert{}",
+        parsed_home_path(),
         std::path::MAIN_SEPARATOR,
         std::path::MAIN_SEPARATOR
     )

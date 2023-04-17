@@ -2,7 +2,7 @@
   import { invoke } from "@tauri-apps/api/tauri";
   import { getVersion } from "@tauri-apps/api/app";
   import { arch } from "@tauri-apps/api/os";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import type { ProfileDetailsInfo, ServiceConfig } from "./models";
   import { add_padding_to_keycode_array, handle_tauri_result } from "./utils";
   import ProfileDetails from './components/ProfileDetails.svelte';
@@ -19,8 +19,11 @@
   }
 
   let selected_profile_id: string | undefined = undefined;
+  let is_mapper_active = false;
   onMount(async () => {
     await update_service_config();
+    await invoke("initial_check", {});
+    is_mapper_active = await invoke("current_mapper_state", {});
     selected_profile_id = service_config.active_profile;
     initial_load = false;
   });
@@ -58,7 +61,7 @@
       modal_info.set({
         type: "info",
         title: "Everything up-to-date",
-        description: `Your version matches the latest released version (installed: ${app_version} ; latest: ${latest_release_version}).`,
+        description: `Your version matches the latest released version (installed: ${app_version} VS latest: ${latest_release_version}).`,
       } as ModalProps);
       return;
     }
@@ -102,6 +105,17 @@
     } as ModalProps);
   }
   
+  async function change_mapper_state() {
+    await invoke("change_mapper_state", { newState: is_mapper_active });
+  }
+  
+  async function refresh_remmaper_state() {
+    if (is_mapper_active) {
+      await invoke("change_mapper_state", { newState: false });
+      await invoke("change_mapper_state", { newState: true });
+    }
+  }
+  
   async function create_profile() {
     handle_tauri_result<string>(await invoke("create_profile", {}), (result) => {
       selected_profile_id = result;
@@ -111,6 +125,7 @@
   
   async function delete_profile() {
     handle_tauri_result<void>(await invoke("delete_profile", { idToDelete: selected_profile_id }));
+    await refresh_remmaper_state();
     await update_service_config();
     selected_profile_id = undefined;
   }
@@ -128,6 +143,7 @@
         title: "Successfully saved profile",
         description: "Your profile changes should be have been successfully written into config file.",
       } as ModalProps);
+      await refresh_remmaper_state();
     }
     await update_service_config();
   }
@@ -141,6 +157,10 @@
     <h1 class="header">KeyXpert</h1>
     <div class="check-for-updates-button-wrapper">
       <button class="btn primary" on:click={check_for_updates}>Check for updates</button>
+    </div>
+    <div class="is-mapper-active-wrapper">
+      <input type="checkbox" id="is-mapper-active" name="is-mapper-active" bind:checked={is_mapper_active} on:change={change_mapper_state} />
+      <label for="is-mapper-active" id="mapper-state-label" class={`${!is_mapper_active ? "not-active" : ""}`}>Mapper is {is_mapper_active ? "active" : "idle"}</label>
     </div>
     <div class="advanced-settings-button-wrapper">
       <button class="btn primary">Advanced settings</button>
