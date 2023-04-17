@@ -57,3 +57,20 @@ where
         }
     }
 }
+
+#[cfg(target_os = "windows")]
+pub trait SilentCmd {
+    fn new_silent_cmd() -> std::process::Command;
+}
+
+#[cfg(target_os = "windows")]
+impl SilentCmd for std::process::Command {
+    fn new_silent_cmd() -> std::process::Command {
+        use std::os::windows::process::CommandExt;
+        use std::process::Command;
+
+        let mut new_cmd = Command::new("cmd");
+        new_cmd.creation_flags(0x08000000); // https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
+        new_cmd
+    }
+}

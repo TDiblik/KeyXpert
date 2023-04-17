@@ -1,4 +1,4 @@
-use std::{fs, io};
+use std::{fs, io, process::Command};
 
 use mapper_service::{
     shared_constants,
@@ -38,8 +38,10 @@ pub fn download_and_install_update(url_path: String, expected_installer_name: St
     }
     drop(new_installer);
 
-    // TODO: If windows
-    if std::process::Command::new("cmd")
+    #[cfg(target_os = "windows")]
+    use crate::models::SilentCmd;
+    #[cfg(target_os = "windows")]
+    if Command::new_silent_cmd()
         .args([
             "/C",
             "start",
@@ -80,7 +82,7 @@ pub fn initial_check() -> CommandResult<String> {
         .join("Startup")
         .join("start_mapper_service_on_startup.bat");
     if !startup_script_path.exists() {
-        // TODO: If unable to create, let users know
+        // TODO: If unable to create, let user know
         let _ = fs::write(
             startup_script_path,
             format!(
@@ -99,10 +101,10 @@ pub fn initial_check() -> CommandResult<String> {
 #[cfg(target_os = "windows")]
 #[tauri::command]
 pub fn current_mapper_state() -> bool {
-    use std::process::{Command, Stdio};
+    use crate::models::SilentCmd;
+    use std::process::Stdio;
 
-    // cmd /C tasklist | find /I "mapper_service.exe" > nul && echo true || echo false
-    let Ok(output) = Command::new("cmd")
+    let Ok(output) = Command::new_silent_cmd()
         .args([
             "/C",
             "tasklist",
@@ -132,11 +134,11 @@ pub fn current_mapper_state() -> bool {
 #[cfg(target_os = "windows")]
 #[tauri::command]
 pub fn change_mapper_state(new_state: bool) {
-    use std::process::Command;
+    use crate::models::SilentCmd;
 
     let mapper_path = shared_constants::get_mapper_path();
 
-    let mut command = Command::new("cmd");
+    let mut command = Command::new_silent_cmd();
     match new_state {
         true => command.args([
             "/C",

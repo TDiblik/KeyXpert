@@ -8,7 +8,6 @@
 TODO:
 
 - Add settings UI
-  - Remove anoying console windows poping-up when running `Command::new("cmd")` (doesn't happen in dev mode :/)
   - UI should remember it's state after restart (size,position,miximized/not-maximized)
   - Ability to disable Remapper in Advanced settings (Core should respenct this setting)
   - Ability to disable after-boot Remapper startup in Advanced settings (UI should respect and edit this setting)
