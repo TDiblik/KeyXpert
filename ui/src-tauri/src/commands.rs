@@ -69,9 +69,8 @@ pub fn get_service_config() -> CommandResult<ServiceConfig> {
 pub fn initial_check() -> CommandResult<String> {
     use std::path::Path;
 
-    let mapper_path = shared_constants::get_mapper_path();
-
-    let new_link_path = Path::new(&shared_constants::parsed_home_path())
+    // TODO: It would be best for installer to register on_startup start, but I was unable to get that working
+    let startup_script_path = Path::new(&shared_constants::parsed_home_path())
         .join("AppData")
         .join("Roaming")
         .join("Microsoft")
@@ -79,15 +78,19 @@ pub fn initial_check() -> CommandResult<String> {
         .join("Start Menu")
         .join("Programs")
         .join("Startup")
-        .join("start_mapper_service.lnk");
-
-    if !new_link_path.exists() {
-        let Ok(sl) = mslnk::ShellLink::new(mapper_path.display().to_string()) else {
-            return CommandResult::new_err("Unable to create shell link to mapper");
-        };
-        if sl.create_lnk(new_link_path).is_err() {
-            return CommandResult::new_err("Unable to create shell link to mapper");
-        }
+        .join("start_mapper_service_on_startup.bat");
+    if !startup_script_path.exists() {
+        // TODO: If unable to create, let users know
+        let _ = fs::write(
+            startup_script_path,
+            format!(
+                r#"
+                    @echo off
+                    start powershell -Command "Start-Process -FilePath \"{}\" -WindowStyle Hidden"
+                "#,
+                shared_constants::get_mapper_path().display()
+            ),
+        );
     }
 
     CommandResult::new_success(None)
