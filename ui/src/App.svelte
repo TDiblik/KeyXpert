@@ -36,7 +36,7 @@
       modal_info.set({
         type: "error",
         title: "Error occured :(",
-        description: "Unable to get data about latest release. This error could either mean that Github is down, OR (the more realistic reason), I fucked up releases, so you should probably go onto my github and open issue/check for manual updates.",
+        description: "There seems to be an issue retrieving data about the latest release. This could be due to either a temporary Github outage or I made a mistake while managing releases. To resolve this, you could wait and try again later in case it's a Github outage. Alternatively, you can visit my Github page, open an issue, or manually check for updates.",
         show_error_info: true,
         error: {
           url: req.url,
@@ -58,7 +58,7 @@
       modal_info.set({
         type: "info",
         title: "Everything up-to-date",
-        description: `Latest released version is ${latest_release_version} and your current version is ${app_version}.`,
+        description: `Your version matches the latest released version (your: ${app_version} ; latest: ${latest_release_version}).`,
       } as ModalProps);
       return;
     }
@@ -68,7 +68,7 @@
       system_archtecture = "x64";
     }
     const expected_installer_name = `KeyXpert_${latest_release_version}_${system_archtecture}_en-US.msi`; // TODO: Match extension against platform
-    const download_url = content.assets.find(s => s.name == expected_installer_name).browser_download_url // Ensured by respose schema (reference above)
+    const download_url = content.assets?.find(s => s.name == expected_installer_name)?.browser_download_url // Ensured by respose schema (reference above), first nullable check is just to make sure, second is to prevent error when expected_installer_name is not found
     if (download_url == null) {
       modal_info.set({
         type: "error",
@@ -86,8 +86,8 @@
       yes_callback: async () => {
         modal_info.set({
           type: "fixed-info",
-          title: "Installing new update...",
-          description: "It's gonna take some time, please be patient...",
+          title: "Installing update...",
+          description: "You can take a moment to make yourself a cup of coffee, as the update might take some time... (jk, it's blazingly fast, you probably didn't even manage to finish reading this)",
         } as ModalProps);
 
         const could_update = await invoke("download_and_install_update", { urlPath: download_url, expectedInstallerName: expected_installer_name });
@@ -95,7 +95,7 @@
           modal_info.set({
             type: "error",
             title: "Unable to install new version",
-            description: "Something happened while installing new version. Please update manually or try again later.",
+            description: "An error occurred during the installation of the new version. Please consider updating manually or attempting again later. Alternatively, you may find the new installer in your downloads folder, making it convenient for manual installation.",
           } as ModalProps);
         }
       }
