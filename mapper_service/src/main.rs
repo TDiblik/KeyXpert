@@ -1,6 +1,8 @@
-// Some unused assignments matter when comunicating with C and specially WinApi
+// Some unused assignments matter when comunicating with C and specially WinApi,
 // Rust correctlly shows warnings, however, in this context, those warnings are redundant and annoying.
 #![allow(unused_assignments)]
+// Don't open console window on windows
+#![windows_subsystem = "windows"]
 
 mod app;
 pub mod models;
