@@ -18,6 +18,7 @@ TODO:
   - Remove ability to Maximize window
   - Ability to set `ENABLE_RECURSIVE_REMAPPING` and `ENABLE_RECURSIVE_SHORTCUTS` inside UI
 - Finish base project windows-only
+- Sign the bundles
 - Add release pipeline
 - Add Linux support
 - Add MacOs support (I have very limited access to one mac which I could use for testing from time to time, but PR from Mac users will be more than welcome...)
