@@ -11,6 +11,7 @@ TODO:
   - base UI
     - After remapping, restart mapper_service windows service
   - UI installs latest mapper_service from github
+  - When remapping single key, after key press, finish selection (ability to disable this behaviour in Advanced settings)
   - UI registers mapper_service as a windows service that starts after startup
   - UI should remember it's state after restart (size,position,miximized/not-maximized)
   - Select keyboard layout, install new keyboard layout and delete existing keyboard layouts
