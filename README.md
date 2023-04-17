@@ -1,4 +1,4 @@
-## <p style="text-align: center;">This is WIP, please don't create issues about bugs, I have my own list of feature/bug fixes atm.</p>
+## <p style="text-align: center;">This is WIP, please don't create issues about bugs, I have my own list of feature/bug fixes rn.</p>
 
 ## <p style="text-align: center;">DOGFOODING atm to find all bugs</p>
 
@@ -8,19 +8,15 @@
 TODO:
 
 - Add settings UI
-  - base UI
-    - After remapping, restart mapper_service windows service
-  - UI installs latest mapper_service from github
-  - When remapping single key, after key press, finish selection (ability to disable this behaviour in Advanced settings)
-  - UI registers mapper_service as a windows service that starts after startup
   - UI should remember it's state after restart (size,position,miximized/not-maximized)
+  - Ability to disable Remapper in Advanced settings (Core should respenct this setting)
+  - Ability to disable after-boot Remapper startup in Advanced settings (UI should respect and edit this setting)
+  - Ability to set `ENABLE_RECURSIVE_REMAPPING` and `ENABLE_RECURSIVE_SHORTCUTS` inside UI (advanced settings)
   - Select keyboard layout, install new keyboard layout and delete existing keyboard layouts
   - Ability to remove sticky keys option from poping-up every time I press shift more than once in a span of 1 minute :/
   - Remove ability to Maximize window
-  - Ability to set `ENABLE_RECURSIVE_REMAPPING` and `ENABLE_RECURSIVE_SHORTCUTS` inside UI
 - Finish base project windows-only
 - Sign the bundles
-- Add release pipeline
 - Add Linux support
 - Add MacOs support (I have very limited access to one mac which I could use for testing from time to time, but PR from Mac users will be more than welcome...)
 - Create some kind of logo
