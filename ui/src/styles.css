@@ -347,6 +347,7 @@ input[type="checkbox"]:hover {
 
 #profile-selector {
   width: 45%;
+  line-height: 20px;
 }
 
 .profile-actions * {

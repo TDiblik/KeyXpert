@@ -8,7 +8,7 @@
 TODO:
 
 - Add settings UI
-  - UI should remember it's state after restart (size,position,miximized/not-maximized)
+  - UI should remember it's state after restart (size,position)
   - Ability to disable Remapper in Advanced settings (Core should respenct this setting)
   - Ability to disable after-boot Remapper startup in Advanced settings (UI should respect and edit this setting)
   - Ability to set `ENABLE_RECURSIVE_REMAPPING` and `ENABLE_RECURSIVE_SHORTCUTS` inside UI (advanced settings)
