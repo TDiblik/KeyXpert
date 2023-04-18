@@ -43,6 +43,11 @@
       } else {
         execution_key = 0x0;
       }
+      
+      // TODO: Add UI config setting into Advanced settings that disables the following call (you may want to rebind multiple keys at once)
+      if (execution_key != 0x0 && holding_keys?.length > 0) {
+        change_key_state();
+      }
 
       return prevent_event_bubbling(e);
     }
@@ -54,6 +59,7 @@
     }
     
     function cleanup_events() {
+      all_currently_pressed_keys = [];
       window.removeEventListener("keydown", capture_down, true);
       window.removeEventListener("keyup", capture_up, true);
     }
