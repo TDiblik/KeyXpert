@@ -66,7 +66,7 @@ pub fn get_service_config() -> CommandResult<ServiceConfig> {
 
 #[cfg(target_os = "windows")]
 #[tauri::command]
-pub fn initial_check() -> CommandResult<String> {
+pub fn initial_check() -> CommandResult<()> {
     use std::path::Path;
     use winreg::enums::HKEY_CURRENT_USER;
     use winreg::RegKey;
@@ -93,11 +93,16 @@ pub fn initial_check() -> CommandResult<String> {
         _ => false,
     };
 
-    if should_set_new_value {
-        // TODO: Catch if err and show err dialog
-        let _ = hkey_startup.set_value(
-            shared_constants::REGISTRY_STARTUP_KEY_NAME,
-            &new_registry_value,
+    if should_set_new_value
+        && hkey_startup
+            .set_value(
+                shared_constants::REGISTRY_STARTUP_KEY_NAME,
+                &new_registry_value,
+            )
+            .is_err()
+    {
+        return CommandResult::new_err(
+            "Unable to set registry value that enables mapper to run after login.",
         );
     }
 

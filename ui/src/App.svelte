@@ -22,7 +22,7 @@
   let is_mapper_active = false;
   onMount(async () => {
     await update_service_config();
-    await invoke("initial_check", {});
+    handle_tauri_result<void>(await invoke("initial_check", {}));
     is_mapper_active = await invoke("current_mapper_state", {});
     selected_profile_id = service_config.active_profile;
     initial_load = false;
@@ -160,7 +160,7 @@
     </div>
     <div class="is-mapper-active-wrapper">
       <input type="checkbox" id="is-mapper-active" name="is-mapper-active" bind:checked={is_mapper_active} on:change={change_mapper_state} />
-      <label for="is-mapper-active" id="mapper-state-label" class={`${!is_mapper_active ? "not-active" : ""}`}>Mapper is {is_mapper_active ? "active" : "idle"}</label>
+      <label for="is-mapper-active" id="mapper-state-label" class={`${!is_mapper_active ? "not-active" : ""}`}>Mapper is {is_mapper_active ? "active" : "inactive"}</label>
     </div>
     <div class="advanced-settings-button-wrapper">
       <button class="btn primary">Advanced settings</button>
