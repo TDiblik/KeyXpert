@@ -39,9 +39,7 @@ pub fn download_and_install_update(url_path: String, expected_installer_name: St
     drop(new_installer);
 
     #[cfg(target_os = "windows")]
-    use crate::models::SilentCmd;
-    #[cfg(target_os = "windows")]
-    if Command::new_silent_cmd()
+    if Command::new("cmd") // Doesn't matter that new window spawns, because the process exits right after
         .args([
             "/C",
             "start",
@@ -89,6 +87,7 @@ pub fn initial_check() -> CommandResult<String> {
                 r#"
                     @echo off
                     start powershell -Command "Start-Process -FilePath \"{}\" -WindowStyle Hidden"
+                    exit /b 0
                 "#,
                 shared_constants::get_mapper_path().display()
             ),
@@ -137,15 +136,22 @@ pub fn change_mapper_state(new_state: bool) {
     use crate::models::SilentCmd;
 
     let mapper_path = shared_constants::get_mapper_path();
+    let mapper_path_string = mapper_path.display().to_string();
+
+    let mapper_path_prepared = mapper_path_string
+        .split('\\')
+        .map(|s| match s.contains(' ') {
+            true => format!("\"{}\"", s),
+            false => s.to_string(),
+        })
+        .collect::<Vec<String>>()
+        .join("\\");
 
     let mut command = Command::new_silent_cmd();
     match new_state {
-        true => command.args([
-            "/C",
-            "start",
-            "/B",
-            mapper_path.display().to_string().as_str(),
-        ]),
+        true => command
+            .arg("/C")
+            .arg(format!(r#"start /B {}"#, mapper_path_prepared)),
         false => command.args([
             "/C",
             "taskkill",
