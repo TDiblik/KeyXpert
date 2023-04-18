@@ -68,29 +68,36 @@ pub fn get_service_config() -> CommandResult<ServiceConfig> {
 #[tauri::command]
 pub fn initial_check() -> CommandResult<String> {
     use std::path::Path;
+    use winreg::enums::HKEY_CURRENT_USER;
+    use winreg::RegKey;
 
-    // TODO: It would be best for installer to register on_startup start, but I was unable to get that working
-    let startup_script_path = Path::new(&shared_constants::parsed_home_path())
-        .join("AppData")
-        .join("Roaming")
-        .join("Microsoft")
-        .join("Windows")
-        .join("Start Menu")
-        .join("Programs")
-        .join("Startup")
-        .join("start_mapper_service_on_startup.bat");
-    if !startup_script_path.exists() {
-        // TODO: If unable to create, let user know
-        let _ = fs::write(
-            startup_script_path,
-            format!(
-                r#"
-                    @echo off
-                    start powershell -Command "Start-Process -FilePath \"{}\" -WindowStyle Hidden"
-                    exit /b 0
-                "#,
-                shared_constants::get_mapper_path().display()
-            ),
+    let hkey_current_user = RegKey::predef(HKEY_CURRENT_USER);
+    let hkey_startup = hkey_current_user
+        .open_subkey_with_flags(
+            Path::new("Software")
+                .join("Microsoft")
+                .join("Windows")
+                .join("CurrentVersion")
+                .join("Run"),
+            winreg::enums::KEY_ALL_ACCESS,
+        )
+        .unwrap();
+
+    let reg_value_option: std::result::Result<String, std::io::Error> =
+        hkey_startup.get_value(shared_constants::REGISTRY_STARTUP_KEY_NAME);
+
+    let new_registry_value = format!("\"{}\"", shared_constants::get_mapper_path().display());
+    let should_set_new_value = match reg_value_option {
+        Ok(reg_value) if reg_value != new_registry_value => true,
+        Err(_) => true,
+        _ => false,
+    };
+
+    if should_set_new_value {
+        // TODO: Catch if err and show err dialog
+        let _ = hkey_startup.set_value(
+            shared_constants::REGISTRY_STARTUP_KEY_NAME,
+            &new_registry_value,
         );
     }
 
