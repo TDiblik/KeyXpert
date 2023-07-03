@@ -120,4 +120,29 @@ fn main() {
     // Write the generated code to a file
     let mut generated_sys_keys_file = File::create(dest_path).unwrap();
     generated_sys_keys_file.write_all(code.as_bytes()).unwrap();
+
+    // only build the resource for release builds
+    // as calling rc.exe might be slow
+    if std::env::var("PROFILE").unwrap() == "release"
+        && std::env::var("SHOULD_ATTACH_MANIFEST").unwrap_or("".to_owned()) == "true"
+    {
+        let mut res = winres::WindowsResource::new();
+        res.set_manifest(
+            r#"
+        <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+        <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+            <security>
+                <requestedPrivileges>
+                    <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+                </requestedPrivileges>
+            </security>
+        </trustInfo>
+        </assembly>
+        "#,
+        );
+        if let Err(error) = res.compile() {
+            eprint!("{}", error);
+            std::process::exit(1);
+        }
+    }
 }

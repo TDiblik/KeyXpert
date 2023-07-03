@@ -33,7 +33,7 @@ for target in "${supported_targets[@]}"
 do
     rm -rf target
     cargo clean
-    cargo build --release --target $target
+    SHOULD_ATTACH_MANIFEST=true cargo build --release --target $target
 
     # Windows
     cp ./target/$target/release/mapper_service.exe ../release_build/mapper_service/mapper_service-$target.exe
