@@ -9,11 +9,8 @@ TODO:
 
 - Add settings UI
   - UI should remember it's state after restart (size,position)
-  - Ability to disable Remapper in Advanced settings (Core should respenct this setting)
   - Ability to disable after-boot Remapper startup in Advanced settings (UI should respect and edit this setting)
   - Ability to set `ENABLE_RECURSIVE_REMAPPING` and `ENABLE_RECURSIVE_SHORTCUTS` inside UI (advanced settings)
-  - Select keyboard layout, install new keyboard layout and delete existing keyboard layouts
-  - Ability to remove sticky keys option from poping-up every time I press shift more than once in a span of 1 minute :/
   - Remove ability to Maximize window
 - Finish base project windows-only
 - Sign the bundles
