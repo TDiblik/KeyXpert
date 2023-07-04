@@ -11,7 +11,6 @@
     // e.which || e.keyCode === Windows VK
     current_key = cover_special_vk_cases(e.which || e.keyCode, e.code);
 
-    // TODO: Add UI config setting into Advanced settings that disables the following call (you may want to rebind multiple keys at once)
     change_key_state();
 
     return prevent_event_bubbling(e);

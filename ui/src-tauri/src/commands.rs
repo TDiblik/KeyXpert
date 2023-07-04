@@ -52,7 +52,7 @@ pub fn download_and_install_update(url_path: String, expected_installer_name: St
         return false;
     }
 
-    std::process::exit(0); // TODO: It would be better to use https://docs.rs/tauri/1.2.4/tauri/struct.AppHandle.html#method.exit but I was unable to get it working
+    std::process::exit(0);
 }
 
 #[tauri::command]
@@ -216,7 +216,6 @@ pub fn delete_profile(id_to_delete: Uuid) -> CommandResult<()> {
     if let Some(position_to_delete) = config.profiles.iter().position(|s| s.id == id_to_delete) {
         let deleted_profile = config.profiles.remove(position_to_delete);
 
-        // TODO: Rewrite this nested monstrosity as soon as if let chains are stable. (https://github.com/rust-lang/rust/issues/53667)
         if let Some(active_profile) = config.active_profile {
             if deleted_profile.id == active_profile {
                 config.active_profile = None;

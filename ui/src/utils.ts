@@ -124,7 +124,7 @@ export function vk_to_string(vk: number): String {
     case 0xFF: return "Clear";
   }
 
-  return " "; // TODO: Or "unknown", idk what I prefer rn
+  return " ";
 }
 
 // prettier-ignore

@@ -194,7 +194,6 @@
     <div class="profile-selection-row">
       <select id="profile-selector" bind:value={selected_profile_id}>
         <option />
-        <!-- TODO: Sort by active and then name -->
         {#each service_config?.profiles as profile}
           {@const is_active_profile = service_config?.active_profile === profile.id}
           <option class={`${is_active_profile ? "active-profile" : ""}`} value={profile.id}>{profile.name}</option>
