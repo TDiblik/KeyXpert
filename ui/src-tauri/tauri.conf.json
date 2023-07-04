@@ -69,6 +69,7 @@
         "fullscreen": false,
         "resizable": true,
         "maximized": false,
+        "maximizable": false,
         "focus": true,
         "alwaysOnTop": false,
         "decorations": true,

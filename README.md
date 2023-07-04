@@ -11,7 +11,6 @@ TODO:
   - UI should remember it's state after restart (size,position)
   - Ability to disable after-boot Remapper startup in Advanced settings (UI should respect and edit this setting)
   - Ability to set `ENABLE_RECURSIVE_REMAPPING` and `ENABLE_RECURSIVE_SHORTCUTS` inside UI (advanced settings)
-  - Remove ability to Maximize window
 - Finish base project windows-only
 - Sign the bundles
 - Add Linux support
