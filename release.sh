@@ -20,7 +20,6 @@ $echo "---- Installing build dependencies ----"
 declare -a supported_targets=(
     "x86_64-pc-windows-msvc"
     "x86_64-unknown-linux-gnu"
-    "x86_64-apple-darwin"
 )
 for target in "${supported_targets[@]}"
 do
@@ -37,7 +36,7 @@ do
 
     # Windows
     cp ./target/$target/release/mapper_service.exe ../release_build/mapper_service/mapper_service-$target.exe
-    # Linux / Mac
+    # Linux
     cp ./target/$target/release/mapper_service ../release_build/mapper_service/mapper_service-$target
 done
 

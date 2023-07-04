@@ -18,7 +18,6 @@ TODO:
 - Finish base project windows-only
 - Sign the bundles
 - Add Linux support
-- Add MacOs support (I have very limited access to one mac which I could use for testing from time to time, but PR from Mac users will be more than welcome...)
 - Create some kind of logo
 - Create nice looking README so the project looks more legit
 - Create website from which users download the software (non-programmers don't use github)
