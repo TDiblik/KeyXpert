@@ -25,7 +25,7 @@ pub fn get_mapper_path() -> PathBuf {
     let mut mapper_path = std::env::current_exe().unwrap();
     mapper_path.pop();
     mapper_path.push(MAPPER_EXECUTABLE_NAME);
-    return mapper_path;
+    mapper_path
 }
 
 pub fn config_dir_path() -> String {
