@@ -2,7 +2,7 @@ use std::{fs, io, process::Command};
 
 use mapper_service::{
     shared_constants,
-    shared_models::{Profile, ServiceConfig},
+    shared_models::{Profile, ServiceConfig, UIConfig},
 };
 use uuid::Uuid;
 
@@ -181,11 +181,14 @@ pub fn change_mapper_state(new_state: bool) {
     let _ = child.wait();
 }
 
-// #[tauri::command]
-// fn get_ui_config() -> ServiceConfig {
-//     get_config::<ServiceConfig>(constants::UI_CONFIG_FILE_PATH)
-//         .expect("Unable to get ui config file")
-// }
+#[tauri::command]
+pub fn get_ui_config() -> CommandResult<UIConfig> {
+    let Ok(config) = utils::get_config::<UIConfig>(shared_constants::ui_config_file_path()) else {
+        return CommandResult::new_err("Unable to read or parse service config file.");
+    };
+
+    CommandResult::new_success_with_value(Some(config), None)
+}
 
 #[tauri::command]
 pub fn create_profile() -> CommandResult<Uuid> {

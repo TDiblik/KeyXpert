@@ -31,3 +31,10 @@ export interface CommandResult<T> {
   message: string;
   result: null | T;
 }
+
+export interface UIConfig {
+  window_height: number;
+  window_width: number;
+  window_position_x: number;
+  window_position_y: number;
+}

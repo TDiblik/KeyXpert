@@ -60,3 +60,11 @@ impl Default for ShortcutRemap {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct UIConfig {
+    pub window_height: u32,
+    pub window_width: u32,
+    pub window_position_x: i32,
+    pub window_position_y: i32,
+}

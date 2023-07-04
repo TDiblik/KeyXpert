@@ -24,6 +24,10 @@
       },
       "os": {
         "all": true
+      },
+      "window": {
+        "setSize": true,
+        "setPosition": true
       }
     },
     "bundle": {
