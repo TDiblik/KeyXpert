@@ -40,3 +40,4 @@ TODO:
    rebing another normal key onto the previous normal key is (imo) an asymptote :D (1/x, lame joke, sorry, meaning less than 1 person, nearly 0 people, will need this functionality) and time to implement it is just not worth it.
 2. Does not work in lock screen.
 3. Unable to remap system shortcuts, however able to add system shortcut functinality to different shortcuts.
+4. When remapping windows key, I am technically unable to capture the windows key before windows does, so remapping windows key UI kinda sucks, but works.
