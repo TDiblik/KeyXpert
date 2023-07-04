@@ -1,5 +1,5 @@
-import type { CommandResult } from "./models";
-import { modal_info, type ModalProps } from "./components/Modal/ModalStore";
+import type {CommandResult} from "./models";
+import {modal_info, type ModalProps} from "./components/Modal/ModalStore";
 
 // References for hard coded values:
 // https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes

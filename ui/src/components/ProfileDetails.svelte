@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Profile, ProfileDetailsInfo } from "src/models";
+  import type {Profile, ProfileDetailsInfo} from "src/models";
   import RebindList from "./RebindList.svelte";
 
   export let selected_profile: Profile;
@@ -8,9 +8,9 @@
 
   let _profile_info: ProfileDetailsInfo = {
     ...selected_profile,
-    use_this_profile: selected_profile.id === active_profile
+    use_this_profile: selected_profile.id === active_profile,
   };
-  
+
   // $: console.log(_profile_info)
 </script>
 
@@ -26,7 +26,7 @@
 </div>
 
 <RebindList title="Keys" bind:bindings={_profile_info.key_remaps} is_shortcut={false} />
-<RebindList title="Shortcuts" bind:bindings={_profile_info.shortcut_remaps} is_shortcut={true}/>
+<RebindList title="Shortcuts" bind:bindings={_profile_info.shortcut_remaps} is_shortcut={true} />
 
 <div class="bottom-row">
   <div class="save-button-wrapper">
@@ -35,43 +35,43 @@
 </div>
 
 <style>
-.profile-info-row {
-  margin-top: 35px;
-  margin-bottom: 5px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
+  .profile-info-row {
+    margin-top: 35px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
 
-.profile-name-wrapper {
-  width: 70%;
-}
+  .profile-name-wrapper {
+    width: 70%;
+  }
 
-#profile-name-label {
-  margin-right: 10px;
-}
+  #profile-name-label {
+    margin-right: 10px;
+  }
 
-#profile-name {
-  width: 60%;
-}
+  #profile-name {
+    width: 60%;
+  }
 
-.is-active-wrapper {
-  margin-left: auto;
-}
+  .is-active-wrapper {
+    margin-left: auto;
+  }
 
-#is-active-main-wrapper {
-  margin-left: 5px;
-}
+  #is-active-main-wrapper {
+    margin-left: 5px;
+  }
 
-.bottom-row {
-  margin-top: 15px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-}
+  .bottom-row {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+  }
 
-.save-button-wrapper {
-  margin-bottom: 10px; /* should show scroll before btn overflows page */
-}
+  .save-button-wrapper {
+    margin-bottom: 10px; /* should show scroll before btn overflows page */
+  }
 </style>
