@@ -64,7 +64,14 @@ pub fn get_service_config() -> CommandResult<ServiceConfig> {
     CommandResult::new_success_with_value(Some(config), None)
 }
 
-// TODO: Disable this function during development, because it keeps on changing registry from my installed version to this development version
+// don't run intial_check during development, since it changes values of my installed instance and it's annoying :D
+#[cfg(debug_assertions)]
+#[tauri::command]
+pub fn initial_check() -> CommandResult<()> {
+    CommandResult::new_success(None)
+}
+
+#[cfg(not(debug_assertions))]
 #[cfg(target_os = "windows")]
 #[tauri::command]
 pub fn initial_check() -> CommandResult<()> {
