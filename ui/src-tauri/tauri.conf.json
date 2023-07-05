@@ -45,11 +45,10 @@
       "externalBin": ["../../release_build/mapper_service/mapper_service"],
 
       "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
+        "icons/logo.png",
+        "icons/logo.icns",
+        "icons/logo.ico",
+        "icons/StoreLogo.png"
       ],
 
       "windows": {

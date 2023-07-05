@@ -6,7 +6,6 @@
 TODO:
 
 - Add Linux support
-- Create some kind of logo
 - Create nice looking README so the project looks more legit
 - Create website from which users download the software (non-programmers don't use github)
 - Write tests that make sense.
