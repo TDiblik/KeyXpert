@@ -32,7 +32,9 @@
         new_holding_keys.push(0xa5);
       }
       if_keycode_pressed(all_currently_pressed_keys, "Shift", 0xa0, 0xa1, new_holding_keys);
-      holding_keys = new_holding_keys;
+      if (!(holding_keys.length == 1 && (holding_keys[0] == 0x5b || holding_keys[0] == 0xbc))) {
+        holding_keys = new_holding_keys;
+      }
     }
 
     // e.which || e.keyCode === Windows VK
