@@ -2,12 +2,7 @@ use std::{path::PathBuf, time::SystemTime};
 
 use chrono::{DateTime, Utc};
 
-#[cfg(target_os = "windows")]
 pub const MAPPER_EXECUTABLE_NAME: &str = "mapper_service.exe";
-#[cfg(target_family = "unix")]
-pub const MAPPER_EXECUTABLE_NAME: &str = "mapper_service";
-
-#[cfg(target_os = "windows")]
 pub const REGISTRY_STARTUP_KEY_NAME: &str = "KeyXpert_start_mapper_after_startup";
 
 /// Following format (ends with separator): C:\\Users\UserName\

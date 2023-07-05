@@ -6,9 +6,6 @@ use mapper_service::{
     shared_models::{Profile, ServiceConfig},
 };
 
-// --------------------------------------
-// -------- Cross-platform utils --------
-// --------------------------------------
 pub fn get_service_config(config_path_raw: String) -> anyhow::Result<ServiceConfig> {
     let config_buf = BufReader::new(File::open(Path::new(&config_path_raw))?);
     Ok(serde_json::from_reader(config_buf)?)
@@ -49,10 +46,6 @@ pub unsafe fn is_sys_key(key: u8) -> bool {
     *crate::SYS_KEYS_TABLE.get(key as usize).unwrap_or(&false)
 }
 
-// ------------------------------------
-// -------- Windows-only utils --------
-// ------------------------------------
-#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! call_next_hook {
     ($n_code:expr, $w_param:expr, $l_param:expr) => {
@@ -60,7 +53,6 @@ macro_rules! call_next_hook {
     };
 }
 
-#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! event_handled {
     () => {
@@ -68,7 +60,6 @@ macro_rules! event_handled {
     };
 }
 
-#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! map_virtual_key {
     ($key:expr) => {
@@ -76,7 +67,6 @@ macro_rules! map_virtual_key {
     };
 }
 
-#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! keybd_trigger_key_up {
     ($key:expr, $scan_code:expr) => {
@@ -89,16 +79,9 @@ macro_rules! keybd_trigger_key_up {
     };
 }
 
-#[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! keybd_trigger_key_down {
     ($key:expr, $scan_code:expr) => {
         keybd_event($key as u8, $scan_code, KEYEVENTF_EXTENDEDKEY, 0);
     };
 }
-
-// ------------------------------------
-// --------- Linux-only utils ---------
-// ------------------------------------
-//
-// Help needed

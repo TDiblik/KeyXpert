@@ -14,16 +14,11 @@ pub trait AppCore {
     unsafe fn program_loop() -> anyhow::Result<()>;
 }
 
-// ------------------------------------
-// ------ Windows implementation ------
-// ------------------------------------
-#[cfg(target_os = "windows")]
 use crate::{
     call_next_hook, event_handled, keybd_trigger_key_down, keybd_trigger_key_up, log_debug,
     map_virtual_key,
 };
 
-#[cfg(target_os = "windows")]
 use winapi::{
     shared::minwindef::{LPARAM, LRESULT, WPARAM},
     shared::windef::HHOOK__,
@@ -39,10 +34,8 @@ use winapi::{
     },
 };
 
-#[cfg(target_os = "windows")]
 pub static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
 
-#[cfg(target_os = "windows")]
 impl AppCore for App {
     fn setup() -> anyhow::Result<()> {
         let active_profile = get_active_profile()?;
@@ -96,7 +89,6 @@ impl AppCore for App {
     }
 }
 
-#[cfg(target_os = "windows")]
 impl App {
     unsafe extern "system" fn remap_keys_callback(
         n_code: i32,
@@ -243,9 +235,3 @@ impl App {
         event_handled!();
     }
 }
-
-// ------------------------------------
-// ------- Linux implementation -------
-// ------------------------------------
-//
-// Help needed

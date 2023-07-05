@@ -1,17 +1,19 @@
-use std::{fs, io, process::Command};
-use sysinfo::ProcessExt;
-use sysinfo::SystemExt;
-
+use crate::{
+    models::{CommandResult, ProfileSaveObj, SilentCmd},
+    utils,
+};
 use mapper_service::{
     shared_constants,
     shared_models::{Profile, ServiceConfig, UIConfig},
 };
+use std::path::Path;
+use std::process::Stdio;
+use std::{fs, io, process::Command};
+use sysinfo::ProcessExt;
+use sysinfo::SystemExt;
 use uuid::Uuid;
-
-use crate::{
-    models::{CommandResult, ProfileSaveObj},
-    utils,
-};
+use winreg::enums::HKEY_CURRENT_USER;
+use winreg::RegKey;
 
 #[tauri::command]
 pub fn download_and_install_update(url_path: String, expected_installer_name: String) -> bool {
@@ -40,7 +42,6 @@ pub fn download_and_install_update(url_path: String, expected_installer_name: St
     }
     drop(new_installer);
 
-    #[cfg(target_os = "windows")]
     if Command::new("cmd") // Doesn't matter that new window spawns, because the process exits right after
         .args([
             "/C",
@@ -66,7 +67,7 @@ pub fn get_service_config() -> CommandResult<ServiceConfig> {
     CommandResult::new_success_with_value(Some(config), None)
 }
 
-// don't run intial_check during development, since it changes values of my installed instance and it's annoying :D
+// Don't run intial_check during development, since it changes values of my installed instance and it's annoying :D
 #[cfg(debug_assertions)]
 #[tauri::command]
 pub fn initial_check() -> CommandResult<()> {
@@ -85,12 +86,7 @@ pub fn initial_check() -> CommandResult<()> {
     return set_registry_value_to_start_after_boot();
 }
 
-#[cfg(target_os = "windows")]
 fn set_registry_value_to_start_after_boot() -> CommandResult<()> {
-    use std::path::Path;
-    use winreg::enums::HKEY_CURRENT_USER;
-    use winreg::RegKey;
-
     let hkey_current_user = RegKey::predef(HKEY_CURRENT_USER);
     let hkey_startup = hkey_current_user
         .open_subkey_with_flags(
@@ -129,11 +125,7 @@ fn set_registry_value_to_start_after_boot() -> CommandResult<()> {
     CommandResult::new_success(None)
 }
 
-#[cfg(target_os = "windows")]
 fn remove_registry_value_from_booting() -> CommandResult<()> {
-    use std::path::Path;
-    use winreg::enums::HKEY_CURRENT_USER;
-    use winreg::RegKey;
     let hkey_current_user = RegKey::predef(HKEY_CURRENT_USER);
     let hkey_startup = hkey_current_user
         .open_subkey_with_flags(
@@ -158,12 +150,8 @@ fn remove_registry_value_from_booting() -> CommandResult<()> {
     CommandResult::new_success(None)
 }
 
-#[cfg(target_os = "windows")]
 #[tauri::command]
 pub fn current_mapper_state() -> bool {
-    use crate::models::SilentCmd;
-    use std::process::Stdio;
-
     let Ok(output) = Command::new_silent_cmd()
         .args([
             "/C",
@@ -201,33 +189,28 @@ pub fn change_mapper_state(new_state: bool) {
             process.kill();
         }
     } else {
-        #[cfg(target_os = "windows")]
-        {
-            use crate::models::SilentCmd;
+        let mapper_path = shared_constants::get_mapper_path();
+        let mapper_path_string = mapper_path.display().to_string();
 
-            let mapper_path = shared_constants::get_mapper_path();
-            let mapper_path_string = mapper_path.display().to_string();
+        let mapper_path_prepared = mapper_path_string
+            .split('\\')
+            .map(|s| match s.contains(' ') {
+                true => format!("\"{}\"", s),
+                false => s.to_string(),
+            })
+            .collect::<Vec<String>>()
+            .join("\\");
 
-            let mapper_path_prepared = mapper_path_string
-                .split('\\')
-                .map(|s| match s.contains(' ') {
-                    true => format!("\"{}\"", s),
-                    false => s.to_string(),
-                })
-                .collect::<Vec<String>>()
-                .join("\\");
+        let mut command = Command::new_silent_cmd();
+        command
+            .arg("/C")
+            .arg(format!(r#"start /B {}"#, mapper_path_prepared));
 
-            let mut command = Command::new_silent_cmd();
-            command
-                .arg("/C")
-                .arg(format!(r#"start /B {}"#, mapper_path_prepared));
-
-            let Ok(mut child) = command.spawn() else {
+        let Ok(mut child) = command.spawn() else {
                return;
             };
 
-            let _ = child.wait();
-        }
+        let _ = child.wait();
     }
 }
 

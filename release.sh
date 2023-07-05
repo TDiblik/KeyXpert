@@ -19,7 +19,6 @@ mkdir ./release_build/mapper_service
 $echo "---- Installing build dependencies ----"
 declare -a supported_targets=(
     "x86_64-pc-windows-msvc"
-    "x86_64-unknown-linux-gnu"
 )
 for target in "${supported_targets[@]}"
 do
@@ -36,8 +35,6 @@ do
 
     # Windows
     cp ./target/$target/release/mapper_service.exe ../release_build/mapper_service/mapper_service-$target.exe
-    # Linux
-    cp ./target/$target/release/mapper_service ../release_build/mapper_service/mapper_service-$target
 done
 
 $echo "---- Cleaning UI----"

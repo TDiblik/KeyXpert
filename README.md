@@ -32,10 +32,8 @@ TODO
 
 ### TODOs
 
-- Add Linux support
 - Create nice looking README so the project looks more legit
-- Write tests that make sense.
-- Write platform specific tests.
+- Write tests for mapper_service (Before making future/breaking changes to it).
 
 ## Limitations / Notes
 
