@@ -19,7 +19,8 @@ fn main() {
             commands::get_service_config,
             commands::create_profile,
             commands::delete_profile,
-            commands::save_profile
+            commands::save_profile,
+            commands::save_advanced_settings
         ])
         .on_window_event(|event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event.event() {

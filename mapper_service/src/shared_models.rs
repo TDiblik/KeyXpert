@@ -1,10 +1,25 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ServiceConfig {
     pub active_profile: Option<Uuid>,
     pub profiles: Vec<Profile>,
+    pub start_on_boot: bool,
+    pub enable_recursive_remapping: bool,
+    pub enable_recursive_shortcuts: bool,
+}
+
+impl Default for ServiceConfig {
+    fn default() -> Self {
+        Self {
+            active_profile: None,
+            profiles: vec![],
+            start_on_boot: true,
+            enable_recursive_remapping: false,
+            enable_recursive_shortcuts: false,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

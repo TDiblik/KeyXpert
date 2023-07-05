@@ -10,6 +10,8 @@
   import type {ModalProps} from "./components/Modal/ModalStore";
   import {modal_info} from "./components/Modal/ModalStore";
   import {PhysicalPosition, PhysicalSize, appWindow} from "@tauri-apps/api/window";
+  import AdvancedSettings from "./components/AdvancedSettings.svelte";
+  import {advanced_settings_props} from "./components/AdvancedSettingsStore";
 
   let initial_load = true;
   let service_config: ServiceConfig | undefined = undefined;
@@ -187,7 +189,7 @@
         >
       </div>
       <div class="advanced-settings-button-wrapper">
-        <button class="btn primary">Advanced settings</button>
+        <button class="btn primary" on:click={() => advanced_settings_props.set({})}>Advanced settings</button>
       </div>
     </div>
 
@@ -223,4 +225,5 @@
   </main>
 
   <Modal />
+  <AdvancedSettings />
 {/if}

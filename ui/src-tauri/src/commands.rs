@@ -72,9 +72,19 @@ pub fn initial_check() -> CommandResult<()> {
 }
 
 #[cfg(not(debug_assertions))]
-#[cfg(target_os = "windows")]
 #[tauri::command]
 pub fn initial_check() -> CommandResult<()> {
+    let Ok(config) = utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path()) else {
+        return CommandResult::new_err("Unable to get service config file");
+    };
+    if !config.start_on_boot {
+        return CommandResult::new_success(None);
+    }
+    return set_registry_value_to_start_after_boot();
+}
+
+#[cfg(target_os = "windows")]
+fn set_registry_value_to_start_after_boot() -> CommandResult<()> {
     use std::path::Path;
     use winreg::enums::HKEY_CURRENT_USER;
     use winreg::RegKey;
@@ -111,6 +121,35 @@ pub fn initial_check() -> CommandResult<()> {
     {
         return CommandResult::new_err(
             "Unable to set registry value that enables mapper to run after login.",
+        );
+    }
+
+    CommandResult::new_success(None)
+}
+
+#[cfg(target_os = "windows")]
+fn remove_registry_value_from_booting() -> CommandResult<()> {
+    use std::path::Path;
+    use winreg::enums::HKEY_CURRENT_USER;
+    use winreg::RegKey;
+    let hkey_current_user = RegKey::predef(HKEY_CURRENT_USER);
+    let hkey_startup = hkey_current_user
+        .open_subkey_with_flags(
+            Path::new("Software")
+                .join("Microsoft")
+                .join("Windows")
+                .join("CurrentVersion")
+                .join("Run"),
+            winreg::enums::KEY_ALL_ACCESS,
+        )
+        .unwrap();
+
+    if hkey_startup
+        .set_value(shared_constants::REGISTRY_STARTUP_KEY_NAME, &"")
+        .is_err()
+    {
+        return CommandResult::new_err(
+            "Unable to set registry value that disables mapper to run after login.",
         );
     }
 
@@ -267,6 +306,38 @@ pub fn save_profile(profile: ProfileSaveObj) -> CommandResult<()> {
 
     if utils::save_config(&shared_constants::service_config_file_path(), &config).is_err() {
         return CommandResult::new_err("Unable to save new service config file");
+    }
+
+    CommandResult::new_success(None)
+}
+
+#[tauri::command]
+pub fn save_advanced_settings(
+    start_on_boot: bool,
+    enable_recursive_remapping: bool,
+    enable_recursive_shortcuts: bool,
+) -> CommandResult<()> {
+    let Ok(mut config) = utils::get_config::<ServiceConfig>(shared_constants::service_config_file_path()) else {
+        return CommandResult::new_err("Unable to read or parse service config file.");
+    };
+
+    if !start_on_boot {
+        let answ = remove_registry_value_from_booting();
+        if !answ.is_success {
+            return answ;
+        }
+    } else {
+        let answ = set_registry_value_to_start_after_boot();
+        if !answ.is_success {
+            return answ;
+        }
+    }
+
+    config.start_on_boot = start_on_boot;
+    config.enable_recursive_remapping = enable_recursive_remapping;
+    config.enable_recursive_shortcuts = enable_recursive_shortcuts;
+    if utils::save_config(&shared_constants::service_config_file_path(), &config).is_err() {
+        return CommandResult::new_err("Unable to save new service config file.");
     }
 
     CommandResult::new_success(None)

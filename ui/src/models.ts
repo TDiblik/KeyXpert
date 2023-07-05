@@ -1,6 +1,9 @@
 export interface ServiceConfig {
   active_profile: null | string;
   profiles: null | Profile[];
+  start_on_boot: boolean;
+  enable_recursive_remapping: boolean;
+  enable_recursive_shortcuts: boolean;
 }
 
 export interface Profile {

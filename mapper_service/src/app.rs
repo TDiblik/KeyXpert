@@ -1,8 +1,9 @@
 use anyhow::anyhow;
+use mapper_service::shared_constants;
 
 use crate::{
     models::{LastSentRemapInfo, RemappedShortcut},
-    utils::{get_active_profile, is_sys_key},
+    utils::{get_active_profile, get_service_config, is_sys_key},
     ENABLE_RECURSIVE_REMAPPING, ENABLE_RECURSIVE_SHORTCUTS, LAST_SENT_REMAP_INFO, REMAPPED_KEYS,
     REMAPPED_SHORTCUTS, REMAPPED_SHORTCUTS_CONTAIN_KEY, STOP_RECURSIVE_SHORTCUT,
 };
@@ -62,6 +63,14 @@ impl AppCore for App {
                 ));
             }
         }
+
+        let Ok(service_config) = get_service_config(shared_constants::service_config_file_path()) else {
+            return Err(anyhow!("Unable to get/parse service config file."));
+        };
+        unsafe {
+            ENABLE_RECURSIVE_REMAPPING = service_config.enable_recursive_remapping;
+            ENABLE_RECURSIVE_SHORTCUTS = service_config.enable_recursive_shortcuts;
+        };
 
         Ok(())
     }
