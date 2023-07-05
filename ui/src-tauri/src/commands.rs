@@ -1,4 +1,6 @@
 use std::{fs, io, process::Command};
+use sysinfo::ProcessExt;
+use sysinfo::SystemExt;
 
 use mapper_service::{
     shared_constants,
@@ -189,42 +191,44 @@ pub fn current_mapper_state() -> bool {
         && first_line.contains(shared_constants::MAPPER_EXECUTABLE_NAME)
 }
 
-#[cfg(target_os = "windows")]
 #[tauri::command]
 pub fn change_mapper_state(new_state: bool) {
-    use crate::models::SilentCmd;
+    let mut system = sysinfo::System::new();
+    system.refresh_all();
 
-    let mapper_path = shared_constants::get_mapper_path();
-    let mapper_path_string = mapper_path.display().to_string();
+    if !new_state {
+        for process in system.processes_by_name("mapper_service.exe") {
+            process.kill();
+        }
+    } else {
+        #[cfg(target_os = "windows")]
+        {
+            use crate::models::SilentCmd;
 
-    let mapper_path_prepared = mapper_path_string
-        .split('\\')
-        .map(|s| match s.contains(' ') {
-            true => format!("\"{}\"", s),
-            false => s.to_string(),
-        })
-        .collect::<Vec<String>>()
-        .join("\\");
+            let mapper_path = shared_constants::get_mapper_path();
+            let mapper_path_string = mapper_path.display().to_string();
 
-    let mut command = Command::new_silent_cmd();
-    match new_state {
-        true => command
-            .arg("/C")
-            .arg(format!(r#"start /B {}"#, mapper_path_prepared)),
-        false => command.args([
-            "/C",
-            "taskkill",
-            "/IM",
-            shared_constants::MAPPER_EXECUTABLE_NAME,
-            "/F",
-        ]),
-    };
+            let mapper_path_prepared = mapper_path_string
+                .split('\\')
+                .map(|s| match s.contains(' ') {
+                    true => format!("\"{}\"", s),
+                    false => s.to_string(),
+                })
+                .collect::<Vec<String>>()
+                .join("\\");
 
-    let Ok(mut child) = command.spawn() else {
-        return;
-    };
+            let mut command = Command::new_silent_cmd();
+            command
+                .arg("/C")
+                .arg(format!(r#"start /B {}"#, mapper_path_prepared));
 
-    let _ = child.wait();
+            let Ok(mut child) = command.spawn() else {
+               return;
+            };
+
+            let _ = child.wait();
+        }
+    }
 }
 
 #[tauri::command]
