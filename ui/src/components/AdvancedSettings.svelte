@@ -56,14 +56,18 @@
 
     <hr />
     <div class="modal-body">
-      <div>
+      <div title="Whether or not to start the mapper service after system boot.">
         <input type="checkbox" bind:checked={service_config.start_on_boot} /> Start on boot
       </div>
-      <div title="TODO">
-        <input type="checkbox" bind:checked={service_config.enable_recursive_remapping} /> ENABLE_RECURSIVE_REMAPPING
+      <div
+        title="Your mappings will be recursive, so if you remap from A to B and from B to C, if you then proceed to press A, you will see the letter C pop-up. You should not activate/check this, unless you know what you are doing."
+      >
+        <input type="checkbox" bind:checked={service_config.enable_recursive_remapping} /> Enable recursive remapping
       </div>
-      <div title="TODO">
-        <input type="checkbox" bind:checked={service_config.enable_recursive_shortcuts} /> ENABLE_RECURSIVE_SHORTCUTS
+      <div
+        title="Your mappings will be recursive, so if you remap from CTRL+A to CTRL+B and from CTRL+B to CTRL+C, if you then proceed to press CTRL+A, you will execute CTRL+C. You should not activate/check this, unless you know what you are doing."
+      >
+        <input type="checkbox" bind:checked={service_config.enable_recursive_shortcuts} /> Enable recursive shortcut remapping
       </div>
     </div>
 
@@ -133,6 +137,11 @@
     margin-top: 10px;
   }
 
+  .modal-body {
+    padding-top: 5px;
+    padding-bottom: 15px;
+    padding-right: 20px;
+  }
   .modal-body * {
     margin-top: 5px;
   }

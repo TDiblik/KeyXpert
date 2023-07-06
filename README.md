@@ -9,12 +9,52 @@
 1. Download the latest installation file from [Releases tab](https://github.com/TDiblik/KeyXpert/releases).
 2. Follow the installer.
    - If, for whatever reason, the installer does not start with admin privelages automatically, please, run it as Administrator.
-   - This program **WILL trigger your anti-virus (sooner or later)**, make sure to turn it off and create a rule to ignore `C:\Program Files\KeyXpert` (more info in notes section, btw don't be scared, check the source code yourself to see that the program is not a malware, or alternativelly, compile it yourself from scratch, if you don't trust my bundles)
+   - This program **WILL trigger your anti-virus (sooner or later)**, make sure to turn it off and create a rule to ignore `C:\Program Files\KeyXpert` (more info in notes section, btw don't be scared, check the source code yourself to see that the program is not a malware, or alternativelly, compile it yourself from scratch, if you don't trust my bundles).
 3. If you already have a version of KeyXpert installed, you can use the "Check for updates" button to automatically check for updates and install the latest version.
 
 ## How to use?
 
-TODO
+### Meta
+
+- On first open, the program will automatically set configuration defaults (most notably, mapper service will set itself to start after boot, UI != mapper service, so you won't see anything after boot, it will just work automatically).
+- UI will remember it's last size and position and respect it on every launch.
+- UI and mapper service are completely separated (separate exe(s) and processes). Mapper service is the thing that does the remapping. This service is lightweight and starts on every boot (unless turned off in settings). UI on the other hand is more resource intensive, but won't start automatically (you have to manually start the program).
+
+### Top Row
+
+![Top row of the program](./readme/top-row.png)
+
+- "Check for updates" => This button will check github releases for new versions of KeyXpert. If it finds a new version, it will ask you whether or not you want to update. If you want to update, the program will automatically update itself and after a while open an installer window, where you have to agree to install a new version.
+- "Advanced settings" => This button will open an "Advanced settings" modal window. More on that below.
+- "Mapper is inactive / active" => The current state of the mapper service. This setting does not effect whether the service is active after boot (you have to change that in Advanced settings). You can manually start or stop the mapper service by clicking the checkbox.
+
+### Profile Selection Row
+
+![Profile selection row of the program, right below top row](./readme/profile-selection-row.png)
+
+- "Selector" => Here, you can select your profiles. By selecting, you will reveal profile settings. Current profile in use will always be highlited blue in the selector.
+- "Add profile" => Generates a new profile. Don't be scared by the generated name, you can change it.
+- "Delete profile" => Removes currently selected profile. This action is irreversible.
+
+### Profile settings section
+
+![Profile settings section of the program, right below profile selection row](./readme/profile-settings-section.png)
+
+- "Name" => You can change your profile name here.
+- "Use this profile" => Since you have many profiles, you have to select which one you want to use. You can only have one profile in use at a time.
+- "Keys" => If you want to remap a single key, you can add it by pressing the "+ (plus) icon/button", or edit it by pressing the "pencil icon" and then pressing the desired button. In the example above, you can see, that I'm remapping the "Caps lock" key to "Backspace" key. This means that every time, I press the "Caps lock" key on my keyboard, the "Backspace" key will get executed instead.
+- "Shortcuts" => Works exactly the same as "Keys" section, but you're required to hold one of the "function keys" (ctrl/alt/shift/windows) while remaping (except for windows key, which can only be pressed once).
+- "Save" => This button will save the current profile configuration and restart the mapper service (when relevant).
+- "No active profile (unable to start remapping)" => This yellow warning label is not included in the screenshot, however it will be visible at the bottom of the program, whenever you don't have any active profiles. To fix this, create a profile, or edit an existing one, and select the "Use this profile" box.
+
+### Advanced settings modal
+
+![Advanced settings modal dialog of the program](./readme/advanced-settings-modal.png)
+
+- "Start on boot" => Whether or not to start the mapper service after system boot.
+- "Enable recursive remapping" => Your mappings will be recursive, so if you remap from A to B and from B to C, if you then proceed to press A, you will see the letter C pop-up. You should not activate/check this, unless you know what you are doing.
+- "Enable recursive shortcut remapping" => Your mappings will be recursive, so if you remap from CTRL+A to CTRL+B and from CTRL+B to CTRL+C, if you then proceed to press CTRL+A, you will execute CTRL+C. You should not activate/check this, unless you know what you are doing.
+- "Save" => Saves the configuration to a file and applies the changes immediately.
 
 ## Development
 
@@ -28,12 +68,17 @@ Run `npm run tauri dev` from the `ui` directory root (make sure to run `npm i` b
 
 ### Publishing
 
-TODO
+1. Run `./release.sh` from project directory root.
+   - Make sure to bump the version inside of the release script.
+2. `git add .`
+3. `git commit -m "[Chore] Bump version to vX.X.X"`
+4. `git tag vX.X.X`
+5. `git push origin master --tag`
+6. Create new release and drop the generated .msi inside of it.
 
 ### TODOs
 
-- Create nice looking README so the project looks more legit
-- Write tests for mapper_service (Before making future/breaking changes to it).
+- Write tests for mapper_service (sometime in the future, before making major future/breaking changes to it).
 
 ## Limitations / Notes
 

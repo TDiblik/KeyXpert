@@ -17,9 +17,15 @@
 <div class="profile-info-row">
   <div class="profile-name-wrapper">
     <label for="profile-name" id="profile-name-label" class="label"> Name </label>
-    <input type="text" id="profile-name" name="profile-name" bind:value={_profile_info.name} />
+    <input
+      type="text"
+      id="profile-name"
+      name="profile-name"
+      title="Enter/Change your profile name"
+      bind:value={_profile_info.name}
+    />
   </div>
-  <div class="is-active-wrapper">
+  <div class="is-active-wrapper" title="Check to use this as your remappng profile">
     <input name="is-active-main" id="is-active-main" type="checkbox" bind:checked={_profile_info.use_this_profile} />
     <label for="is-active-main" id="is-active-main-wrapper">Use this profile</label>
   </div>

@@ -37,9 +37,9 @@
   <div class={`key ${is_new ? "new" : ""}`}>{current_key_char}</div>
   <button class="img-btn-wrapper" on:click={change_key_state}>
     {#if !is_key_changing}
-      <img class="edit-icon" src="/edit-pen.svg" alt="edit button" />
+      <img class="edit-icon" src="/edit-pen.svg" alt="edit button" title="Click to start editing" />
     {:else}
-      <img class="edit-icon" src="/check-lg.svg" alt="edit button" />
+      <img class="edit-icon" src="/check-lg.svg" alt="edit button" title="Click to finish editing" />
     {/if}
   </button>
 </div>

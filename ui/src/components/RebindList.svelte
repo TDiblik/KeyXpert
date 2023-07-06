@@ -43,7 +43,7 @@
 
   <div class="add-item-container">
     <button class="img-btn-wrapper" on:click={on_add}>
-      <img class="add-item" src="/plus-circle-fill.svg" alt="add button" />
+      <img class="add-item" src="/plus-circle-fill.svg" alt="add button" title="Click to add a new remap / item" />
     </button>
   </div>
 </div>
