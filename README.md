@@ -1,6 +1,6 @@
 # KeyXpert
 
-## Keyboard remapper for Windows and Linux.
+## Keyboard remapper for Windows.
 
 ![KeyXpert icon](./ui/src-tauri/icons/logo.png)
 
