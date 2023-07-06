@@ -20,16 +20,19 @@ use crate::{
 };
 
 use winapi::{
-    shared::minwindef::{LPARAM, LRESULT, WPARAM},
-    shared::windef::HHOOK__,
+    shared::{
+        minwindef::{LPARAM, LRESULT, WPARAM},
+        windef::HHOOK__,
+    },
     um::{
         libloaderapi::GetModuleHandleW,
+        wincon::{FreeConsole, GetConsoleWindow},
         winuser::{
             keybd_event, CallNextHookEx, DispatchMessageW, GetAsyncKeyState, GetMessageW,
-            MapVirtualKeyW, SetWindowsHookExW, TranslateMessage, HC_ACTION, KBDLLHOOKSTRUCT,
-            KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC, MSG, VK_LCONTROL, VK_LMENU,
-            VK_LSHIFT, VK_LWIN, VK_RCONTROL, VK_RMENU, VK_RSHIFT, VK_RWIN, WH_KEYBOARD_LL,
-            WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP,
+            MapVirtualKeyW, SetWindowsHookExW, ShowWindow, TranslateMessage, HC_ACTION,
+            KBDLLHOOKSTRUCT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC, MSG, SW_HIDE,
+            VK_LCONTROL, VK_LMENU, VK_LSHIFT, VK_LWIN, VK_RCONTROL, VK_RMENU, VK_RSHIFT, VK_RWIN,
+            WH_KEYBOARD_LL, WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP,
         },
     },
 };
@@ -38,6 +41,15 @@ pub static mut WINDOW_HHOOK: *mut HHOOK__ = std::ptr::null_mut();
 
 impl AppCore for App {
     fn setup() -> anyhow::Result<()> {
+        // Try two separate techniques to hide the console window (if windows_subsystem fails for some reason)
+        unsafe {
+            let window = GetConsoleWindow();
+            if !window.is_null() {
+                ShowWindow(window, SW_HIDE);
+            }
+            FreeConsole();
+        }
+
         let active_profile = get_active_profile()?;
 
         for key_remap in active_profile.key_remaps.iter() {
