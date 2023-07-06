@@ -42,6 +42,7 @@ pub fn download_and_install_update(url_path: String, expected_installer_name: St
     }
     drop(new_installer);
 
+    change_mapper_state(false);
     if Command::new("cmd") // Doesn't matter that new window spawns, because the process exits right after
         .args([
             "/C",
