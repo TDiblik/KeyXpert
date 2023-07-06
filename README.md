@@ -74,7 +74,9 @@ Run `npm run tauri dev` from the `ui` directory root (make sure to run `npm i` b
 3. `git commit -m "[Chore] Bump version to vX.X.X"`
 4. `git tag vX.X.X`
 5. `git push origin master --tag`
-6. Create new release and drop the generated .msi inside of it.
+6. Create new release and add following files from `release_build` directory:
+   - generated `.msi` (eg. KeyXpert_X.X.X_x64_en-US.msi)
+   - LICENSE
 
 ### TODOs
 
