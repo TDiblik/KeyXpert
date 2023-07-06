@@ -1,0 +1,13 @@
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+
+    server_name keyxpert.tomasdiblik.cz;
+
+    ssl_certificate /etc/letsencrypt/live/keyxpert.tomasdiblik.cz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/keyxpert.tomasdiblik.cz/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    return 301 https://github.com/TDiblik/KeyXpert;
+}
