@@ -1,6 +1,6 @@
 [package]
 name = "mapper_service"
-version = "0.0.2"
+version = "1.0.0"
 authors = ["Tomáš Diblík <dibla.tomas@post.cz>"]
 edition = "2021"
 description = "TODO"
