@@ -8,6 +8,7 @@
 
 1. Download the latest installation file from [Releases tab](https://github.com/TDiblik/KeyXpert/releases).
 2. Follow the installer.
+   - Make sure to install it into `C:\Program Files\KeyXpert\`. This path is currentlly hard-coded because there were some issues with the mapper service start on windows boot.
    - If, for whatever reason, the installer does not start with admin privelages automatically, please, run it as Administrator.
    - This program **WILL trigger your anti-virus (sooner or later)**, make sure to turn it off and create a rule to ignore `C:\Program Files\KeyXpert` (more info in notes section, btw don't be scared, check the source code yourself to see that the program is not a malware, or alternativelly, compile it yourself from scratch, if you don't trust my bundles).
 3. If you already have a version of KeyXpert installed, you can use the "Check for updates" button to automatically check for updates and install the latest version.

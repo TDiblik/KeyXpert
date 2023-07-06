@@ -2,6 +2,7 @@
 
 release_build/
 ui/src-tauri/LICENSE
+ui/src-tauri/start-on-boot.bat
 
 # ---------------- END Custom ---------------- #
 

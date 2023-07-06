@@ -102,7 +102,9 @@ fn set_registry_value_to_start_after_boot() -> CommandResult<()> {
     let reg_value_option: std::result::Result<String, std::io::Error> =
         hkey_startup.get_value(shared_constants::REGISTRY_STARTUP_KEY_NAME);
 
-    let new_registry_value = format!("\"{}\"", shared_constants::get_mapper_path().display());
+    let mut install_dir = shared_constants::get_install_dir();
+    install_dir.push("start-on-boot.bat");
+    let new_registry_value = format!("\"{}\"", install_dir.display());
     let should_set_new_value = match reg_value_option {
         Ok(reg_value) if reg_value != new_registry_value => true,
         Err(_) => true,

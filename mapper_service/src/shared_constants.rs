@@ -23,6 +23,12 @@ pub fn get_mapper_path() -> PathBuf {
     mapper_path
 }
 
+pub fn get_install_dir() -> PathBuf {
+    let mut install_dir = std::env::current_exe().unwrap();
+    install_dir.pop();
+    install_dir
+}
+
 pub fn config_dir_path() -> String {
     format!(
         "{}.config{}KeyXpert{}",

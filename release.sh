@@ -45,6 +45,7 @@ cd ./src-tauri
 rm -rf target
 cargo clean
 cp ../../LICENSE .
+cp ../../start-on-boot.bat .
 cd ..
 
 $echo "---- Compiling UI ----"
